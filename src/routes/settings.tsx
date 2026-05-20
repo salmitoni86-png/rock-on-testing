@@ -4,18 +4,20 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { loadSettings, resetAll, saveSettings, type Settings } from "@/lib/kronekort";
+import { LANGS, useLang, type Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Innstillinger — Kronekort" },
-      { name: "description", content: "Polling, varsler og demo-modus." },
+      { title: "Innstillinger — DNB Kronekort" },
+      { name: "description", content: "Språk, varsler og demo-modus." },
     ],
   }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const { t, lang, setLang } = useLang();
   const [s, setS] = useState<Settings | null>(null);
   useEffect(() => setS(loadSettings()), []);
 
@@ -26,80 +28,74 @@ function SettingsPage() {
     saveSettings(next);
   }
 
-  if (!s) return <AppShell title="Innstillinger"><div /></AppShell>;
+  if (!s) return <AppShell title={t("settings")}><div /></AppShell>;
 
   return (
-    <AppShell title="Innstillinger" subtitle="Demo-modus aktivert">
+    <AppShell title={t("settings")} subtitle={t("demoActive")}>
       <Toaster position="top-center" />
       <div className="space-y-4">
-        <Row label="Varsler" hint="Push når penger kommer eller går">
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-sm font-medium">{t("language")}</p>
+          <p className="mb-3 text-xs text-muted-foreground">{t("languageHint")}</p>
+          <div className="grid grid-cols-2 gap-2">
+            {LANGS.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code as Lang)}
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition-colors ${
+                  lang === l.code
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-secondary hover:bg-accent"
+                }`}
+              >
+                <span className="text-base">{l.flag}</span>
+                <span className="truncate">{l.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Row label={t("notifications")} hint={t("notifHint")}>
           <Toggle checked={s.notifications} onChange={(v) => update({ notifications: v })} />
         </Row>
 
-        <Row label="Demo-modus" hint="Genererer mock-transaksjoner i bakgrunnen">
+        <Row label={t("demoMode")} hint={t("demoHint")}>
           <Toggle checked={s.mockMode} onChange={(v) => update({ mockMode: v })} />
         </Row>
 
-        <Row label="Polling-intervall" hint={`Hvert ${s.pollSeconds}. sekund`}>
-          <input
-            type="range"
-            min={5}
-            max={120}
-            step={5}
-            value={s.pollSeconds}
-            onChange={(e) => update({ pollSeconds: Number(e.target.value) })}
-            className="w-32 accent-[color:var(--primary)]"
-          />
-        </Row>
-
-        <Row label="Daglig sammendrag" hint={`Sendes kl. ${String(s.dailyDigestHour).padStart(2, "0")}:00`}>
-          <input
-            type="number"
-            min={0}
-            max={23}
-            value={s.dailyDigestHour}
-            onChange={(e) => update({ dailyDigestHour: Number(e.target.value) })}
-            className="tabular w-16 rounded-lg border border-border bg-secondary px-2 py-1 text-right text-sm"
-          />
-        </Row>
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-sm font-medium">{t("pollCap")}</p>
+        </div>
       </div>
 
       <div className="mt-8 space-y-3">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Bankforbindelser
+          {t("bankConn")}
         </h2>
-        <ul className="space-y-2">
-          {[
-            { p: "DNB", url: "developer.dnb.no/psd2/v1" },
-            { p: "Nordea", url: "api.nordeaopenbanking.com" },
-            { p: "Sbanken", url: "publicapi.sbanken.no" },
-          ].map((b) => (
-            <li key={b.p} className="flex items-center justify-between rounded-2xl border border-border bg-card p-4">
-              <div>
-                <p className="text-sm font-medium">{b.p}</p>
-                <p className="text-xs text-muted-foreground">{b.url}</p>
-              </div>
-              <span className="rounded-full bg-[color:var(--salary)]/15 px-3 py-1 text-[11px] font-medium text-[color:var(--salary)]">
-                Demo
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4">
+          <div>
+            <p className="text-sm font-medium">DNB Kronekort</p>
+            <p className="text-xs text-muted-foreground">developer.dnb.no/psd2/v1</p>
+          </div>
+          <span className="rounded-full bg-[color:var(--salary)]/15 px-3 py-1 text-[11px] font-medium text-[color:var(--salary)]">
+            {t("demoBadge")}
+          </span>
+        </div>
       </div>
 
       <button
         onClick={() => {
           resetAll();
-          toast.success("Tilbakestilt", { description: "Last siden på nytt for å se mock-data." });
+          toast.success(t("resetDone"), { description: t("resetHint") });
           setTimeout(() => window.location.reload(), 600);
         }}
         className="mt-8 w-full rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/15"
       >
-        Tilbakestill demo-data
+        {t("reset")}
       </button>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
-        Kronekort Saldo · v1.0 · demo
+        DNB Kronekort Saldo · v1.1 · demo
       </p>
     </AppShell>
   );
@@ -125,11 +121,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-11 rounded-full transition-colors ${checked ? "bg-primary" : "bg-secondary"}`}
     >
-      <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-card shadow transition-transform ${
-          checked ? "translate-x-5" : "translate-x-0.5"
-        }`}
-      />
+      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-card shadow transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
     </button>
   );
 }
