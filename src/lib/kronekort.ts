@@ -1,10 +1,10 @@
-// Mock domain layer for Kronekort Saldo — ported from the Python app's
-// services/models. Pure client-side, deterministic seed, persists to localStorage.
+// Domain layer — DNB Kronekort only. Polling is capped at 6/day and
+// routed through a server-side proxy rotator (see /api/public/poll-saldo).
 
 export type Card = {
   id: string;
   name: string;
-  provider: "DNB" | "Nordea" | "Sbanken" | "Mock";
+  provider: "DNB"; // DNB Kronekort only
   last4: string;
   balance: number; // NOK
 };
@@ -22,6 +22,8 @@ export type Tx = {
 const SALARY_KEYWORDS = ["NAV", "LØNN", "LONN", "SALARY", "UTBETALING", "TRYGD"];
 const SALARY_MIN = 1000;
 
+export const MAX_POLLS_PER_DAY = 6;
+
 export function detectSalary(merchant: string, amount: number): boolean {
   if (amount < SALARY_MIN) return false;
   const m = merchant.toUpperCase();
@@ -35,29 +37,25 @@ export const formatNOK = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-const KEY_CARDS = "kronekort.cards.v1";
-const KEY_TX = "kronekort.tx.v1";
-const KEY_SETTINGS = "kronekort.settings.v1";
+const KEY_CARDS = "kronekort.cards.v2";
+const KEY_TX = "kronekort.tx.v2";
+const KEY_SETTINGS = "kronekort.settings.v2";
 
 export type Settings = {
-  pollSeconds: number;
   notifications: boolean;
   mockMode: boolean;
-  dailyDigestHour: number;
+  pollHistory: number[]; // timestamps (ms) of saldo polls in last 24h
 };
 
 const DEFAULT_SETTINGS: Settings = {
-  pollSeconds: 30,
   notifications: true,
   mockMode: true,
-  dailyDigestHour: 7,
+  pollHistory: [],
 };
 
 function seedCards(): Card[] {
   return [
-    { id: "c1", name: "Hverdagskonto", provider: "DNB", last4: "4821", balance: 18420 },
-    { id: "c2", name: "Sparekonto", provider: "Sbanken", last4: "9930", balance: 64200 },
-    { id: "c3", name: "Reisekort", provider: "Nordea", last4: "1177", balance: 2310 },
+    { id: "dnb-1", name: "DNB Kronekort", provider: "DNB", last4: "4821", balance: 18420 },
   ];
 }
 
@@ -65,24 +63,22 @@ function seedTx(): Tx[] {
   const now = Date.now();
   const day = 86400_000;
   const items: Omit<Tx, "id" | "isSalary">[] = [
-    { cardId: "c1", date: new Date(now - 0 * day).toISOString(), merchant: "REMA 1000", amount: -342, category: "Mat" },
-    { cardId: "c1", date: new Date(now - 0 * day - 3600_000).toISOString(), merchant: "Ruter", amount: -42, category: "Transport" },
-    { cardId: "c3", date: new Date(now - 1 * day).toISOString(), merchant: "Vy Tog", amount: -289, category: "Transport" },
-    { cardId: "c1", date: new Date(now - 1 * day).toISOString(), merchant: "Espresso House", amount: -68, category: "Kafé" },
-    { cardId: "c2", date: new Date(now - 2 * day).toISOString(), merchant: "NAV UTBETALING", amount: 12450, category: "Inntekt" },
-    { cardId: "c1", date: new Date(now - 3 * day).toISOString(), merchant: "KIWI", amount: -512, category: "Mat" },
-    { cardId: "c1", date: new Date(now - 4 * day).toISOString(), merchant: "Vinmonopolet", amount: -429, category: "Annet" },
-    { cardId: "c1", date: new Date(now - 5 * day).toISOString(), merchant: "Netflix", amount: -149, category: "Abonnement" },
-    { cardId: "c2", date: new Date(now - 6 * day).toISOString(), merchant: "ARBEIDSGIVER AS LØNN", amount: 38200, category: "Inntekt" },
-    { cardId: "c1", date: new Date(now - 7 * day).toISOString(), merchant: "Bunnpris", amount: -218, category: "Mat" },
-    { cardId: "c1", date: new Date(now - 8 * day).toISOString(), merchant: "Apotek 1", amount: -94, category: "Helse" },
-    { cardId: "c3", date: new Date(now - 9 * day).toISOString(), merchant: "SAS", amount: -1890, category: "Reise" },
-    { cardId: "c1", date: new Date(now - 10 * day).toISOString(), merchant: "Spotify", amount: -119, category: "Abonnement" },
-    { cardId: "c1", date: new Date(now - 12 * day).toISOString(), merchant: "Meny", amount: -624, category: "Mat" },
-    { cardId: "c1", date: new Date(now - 14 * day).toISOString(), merchant: "H&M", amount: -399, category: "Klær" },
-    { cardId: "c1", date: new Date(now - 16 * day).toISOString(), merchant: "Circle K", amount: -780, category: "Drivstoff" },
-    { cardId: "c1", date: new Date(now - 18 * day).toISOString(), merchant: "Foodora", amount: -287, category: "Mat" },
-    { cardId: "c1", date: new Date(now - 20 * day).toISOString(), merchant: "REMA 1000", amount: -456, category: "Mat" },
+    { cardId: "dnb-1", date: new Date(now).toISOString(), merchant: "REMA 1000", amount: -342, category: "Mat" },
+    { cardId: "dnb-1", date: new Date(now - 3600_000).toISOString(), merchant: "Ruter", amount: -42, category: "Transport" },
+    { cardId: "dnb-1", date: new Date(now - 1 * day).toISOString(), merchant: "Espresso House", amount: -68, category: "Kafé" },
+    { cardId: "dnb-1", date: new Date(now - 2 * day).toISOString(), merchant: "NAV UTBETALING", amount: 12450, category: "Inntekt" },
+    { cardId: "dnb-1", date: new Date(now - 3 * day).toISOString(), merchant: "KIWI", amount: -512, category: "Mat" },
+    { cardId: "dnb-1", date: new Date(now - 4 * day).toISOString(), merchant: "Vinmonopolet", amount: -429, category: "Annet" },
+    { cardId: "dnb-1", date: new Date(now - 5 * day).toISOString(), merchant: "Netflix", amount: -149, category: "Abonnement" },
+    { cardId: "dnb-1", date: new Date(now - 6 * day).toISOString(), merchant: "ARBEIDSGIVER AS LØNN", amount: 38200, category: "Inntekt" },
+    { cardId: "dnb-1", date: new Date(now - 7 * day).toISOString(), merchant: "Bunnpris", amount: -218, category: "Mat" },
+    { cardId: "dnb-1", date: new Date(now - 8 * day).toISOString(), merchant: "Apotek 1", amount: -94, category: "Helse" },
+    { cardId: "dnb-1", date: new Date(now - 10 * day).toISOString(), merchant: "Spotify", amount: -119, category: "Abonnement" },
+    { cardId: "dnb-1", date: new Date(now - 12 * day).toISOString(), merchant: "Meny", amount: -624, category: "Mat" },
+    { cardId: "dnb-1", date: new Date(now - 14 * day).toISOString(), merchant: "H&M", amount: -399, category: "Klær" },
+    { cardId: "dnb-1", date: new Date(now - 16 * day).toISOString(), merchant: "Circle K", amount: -780, category: "Drivstoff" },
+    { cardId: "dnb-1", date: new Date(now - 18 * day).toISOString(), merchant: "Foodora", amount: -287, category: "Mat" },
+    { cardId: "dnb-1", date: new Date(now - 20 * day).toISOString(), merchant: "REMA 1000", amount: -456, category: "Mat" },
   ];
   return items.map((t, i) => ({
     ...t,
@@ -107,12 +103,16 @@ function safeSet<T>(key: string, value: T) {
 
 export function loadCards(): Card[] {
   const existing = safeGet<Card[] | null>(KEY_CARDS, null);
-  if (existing && existing.length) return existing;
+  if (existing && existing.length) {
+    // Enforce DNB-only invariant on legacy stores
+    const dnb = existing.filter((c) => c.provider === "DNB");
+    if (dnb.length) return dnb;
+  }
   const seeded = seedCards();
   safeSet(KEY_CARDS, seeded);
   return seeded;
 }
-export function saveCards(c: Card[]) { safeSet(KEY_CARDS, c); }
+export function saveCards(c: Card[]) { safeSet(KEY_CARDS, c.filter((x) => x.provider === "DNB")); }
 
 export function loadTx(): Tx[] {
   const existing = safeGet<Tx[] | null>(KEY_TX, null);
@@ -135,35 +135,23 @@ export function resetAll() {
   localStorage.removeItem(KEY_SETTINGS);
 }
 
-// Simulate one polling "tick" — randomly add a new mock transaction.
-const MOCK_MERCHANTS = [
-  { m: "REMA 1000", a: [-120, -680], c: "Mat" },
-  { m: "Ruter", a: [-42, -42], c: "Transport" },
-  { m: "Espresso House", a: [-58, -98], c: "Kafé" },
-  { m: "Circle K", a: [-300, -900], c: "Drivstoff" },
-  { m: "Foodora", a: [-180, -420], c: "Mat" },
-  { m: "Vinmonopolet", a: [-200, -700], c: "Annet" },
-];
-
-export function tick(cards: Card[], tx: Tx[]): { cards: Card[]; tx: Tx[]; newTx: Tx | null } {
-  // 60% chance a new transaction shows up on the primary card.
-  if (Math.random() > 0.6) return { cards, tx, newTx: null };
-  const pick = MOCK_MERCHANTS[Math.floor(Math.random() * MOCK_MERCHANTS.length)];
-  const amount = Math.round(pick.a[0] + Math.random() * (pick.a[1] - pick.a[0]));
-  const cardId = cards[0]?.id ?? "c1";
-  const newTx: Tx = {
-    id: `t${Date.now()}`,
-    cardId,
-    date: new Date().toISOString(),
-    merchant: pick.m,
-    amount,
-    category: pick.c,
-    isSalary: false,
-  };
-  const newCards = cards.map((c) =>
-    c.id === cardId ? { ...c, balance: c.balance + amount } : c,
-  );
-  return { cards: newCards, tx: [newTx, ...tx], newTx };
+// Polling quota — capped at MAX_POLLS_PER_DAY rolling 24h.
+export function pollsRemaining(s: Settings): number {
+  const cutoff = Date.now() - 86400_000;
+  const recent = s.pollHistory.filter((t) => t > cutoff);
+  return Math.max(0, MAX_POLLS_PER_DAY - recent.length);
+}
+export function nextPollIn(s: Settings): { h: number; m: number } | null {
+  const cutoff = Date.now() - 86400_000;
+  const recent = s.pollHistory.filter((t) => t > cutoff).sort((a, b) => a - b);
+  if (recent.length < MAX_POLLS_PER_DAY) return null;
+  const oldest = recent[0];
+  const ms = oldest + 86400_000 - Date.now();
+  return { h: Math.floor(ms / 3_600_000), m: Math.floor((ms % 3_600_000) / 60_000) };
+}
+export function recordPoll(s: Settings): Settings {
+  const cutoff = Date.now() - 86400_000;
+  return { ...s, pollHistory: [...s.pollHistory.filter((t) => t > cutoff), Date.now()] };
 }
 
 export function totals(tx: Tx[]) {
@@ -180,7 +168,7 @@ export function totals(tx: Tx[]) {
       if (t.amount > 0) dIn += t.amount; else dOut += -t.amount;
     }
   }
-  return { mIn, mOut, dIn, dOut };
+  return { mIn, mOut, dIn, dOut, monthlyNet: mIn - mOut };
 }
 
 export function dailySeries(tx: Tx[], days = 14) {

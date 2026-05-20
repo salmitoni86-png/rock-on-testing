@@ -2,24 +2,26 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { dailySeries, formatNOK, loadTx, totals, type Tx } from "@/lib/kronekort";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/stats")({
   head: () => ({
     meta: [
-      { title: "Statistikk — Kronekort" },
-      { name: "description", content: "Daglig forbruk, inntekter og kategorianalyse." },
+      { title: "Statistikk — DNB Kronekort" },
+      { name: "description", content: "Daglig forbruk og kategorianalyse." },
     ],
   }),
   component: StatsPage,
 });
 
 function StatsPage() {
+  const { t } = useLang();
   const [tx, setTx] = useState<Tx[]>([]);
   useEffect(() => setTx(loadTx()), []);
 
   const series = useMemo(() => dailySeries(tx, 14), [tx]);
   const max = Math.max(1, ...series.map((s) => Math.max(s.spend, s.income)));
-  const t = totals(tx);
+  const tot = totals(tx);
 
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
@@ -29,19 +31,19 @@ function StatsPage() {
   const catMax = Math.max(1, ...byCategory.map(([, v]) => v));
 
   return (
-    <AppShell title="Statistikk" subtitle="Siste 14 dager">
+    <AppShell title={t("stats")} subtitle={t("last14")}>
       <section className="rounded-3xl border border-border bg-card p-5">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-xs text-muted-foreground">Forbruk denne måneden</p>
+            <p className="text-xs text-muted-foreground">{t("spendMonth")}</p>
             <p className="tabular mt-1 font-display text-2xl font-semibold text-[color:var(--spend)]">
-              {formatNOK(t.mOut)}
+              {formatNOK(tot.mOut)}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground">Inntekt</p>
+            <p className="text-xs text-muted-foreground">{t("income")}</p>
             <p className="tabular mt-1 font-display text-base font-semibold text-[color:var(--income)]">
-              +{formatNOK(t.mIn)}
+              +{formatNOK(tot.mIn)}
             </p>
           </div>
         </div>
@@ -50,16 +52,8 @@ function StatsPage() {
           {series.map((s) => (
             <div key={s.day} className="flex flex-1 flex-col items-center gap-1">
               <div className="flex h-32 w-full items-end gap-0.5">
-                <div
-                  className="flex-1 rounded-t-sm bg-[color:var(--spend)]/70"
-                  style={{ height: `${(s.spend / max) * 100}%` }}
-                  title={`Ut: ${formatNOK(s.spend)}`}
-                />
-                <div
-                  className="flex-1 rounded-t-sm bg-[color:var(--income)]/70"
-                  style={{ height: `${(s.income / max) * 100}%` }}
-                  title={`Inn: ${formatNOK(s.income)}`}
-                />
+                <div className="flex-1 rounded-t-sm bg-[color:var(--spend)]/70" style={{ height: `${(s.spend / max) * 100}%` }} />
+                <div className="flex-1 rounded-t-sm bg-[color:var(--income)]/70" style={{ height: `${(s.income / max) * 100}%` }} />
               </div>
               <span className="text-[9px] text-muted-foreground">{s.day.split(" ")[1]}</span>
             </div>
@@ -68,7 +62,7 @@ function StatsPage() {
       </section>
 
       <section className="mt-6">
-        <h2 className="mb-3 font-display text-lg font-semibold">Kategorier</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold">{t("categories")}</h2>
         <ul className="space-y-3 rounded-3xl border border-border bg-card p-4">
           {byCategory.map(([cat, val]) => (
             <li key={cat}>

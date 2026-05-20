@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Bell, RefreshCw, Sparkles } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Bell, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import {
@@ -10,90 +10,90 @@ import {
   loadCards,
   loadSettings,
   loadTx,
+  nextPollIn,
+  pollsRemaining,
+  recordPoll,
   saveCards,
+  saveSettings,
   saveTx,
-  tick,
   totals,
 } from "@/lib/kronekort";
+import { useLang } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Saldo — Kronekort" },
-      { name: "description", content: "Sanntids saldo, dagens forbruk og lønnsvarsler." },
+      { title: "Saldo — DNB Kronekort" },
+      { name: "description", content: "Saldo og månedsoversikt for DNB Kronekort." },
     ],
   }),
   component: Dashboard,
 });
 
 function Dashboard() {
+  const { t } = useLang();
   const [cards, setCards] = useState<CardT[]>([]);
   const [tx, setTx] = useState<Tx[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [remaining, setRemaining] = useState(6);
+  const [nextIn, setNextIn] = useState<{ h: number; m: number } | null>(null);
 
   useEffect(() => {
     setCards(loadCards());
     setTx(loadTx());
-  }, []);
-
-  // Background polling — mirrors POLL_INTERVAL_SECONDS from the Python app.
-  useEffect(() => {
     const s = loadSettings();
-    if (!s.mockMode) return;
-    const id = setInterval(() => {
-      setCards((prevC) => {
-        let nextC = prevC;
-        setTx((prevT) => {
-          const r = tick(prevC, prevT);
-          nextC = r.cards;
-          if (r.newTx && s.notifications) {
-            const sign = r.newTx.amount > 0 ? "+" : "";
-            toast(`${r.newTx.merchant}`, {
-              description: `${sign}${formatNOK(r.newTx.amount)} · ${r.newTx.category}`,
-            });
-          }
-          if (r.newTx) {
-            saveTx(r.tx);
-            saveCards(r.cards);
-          }
-          return r.tx;
-        });
-        return nextC;
-      });
-    }, Math.max(5, s.pollSeconds) * 1000);
-    return () => clearInterval(id);
+    setRemaining(pollsRemaining(s));
+    setNextIn(nextPollIn(s));
   }, []);
 
   const total = cards.reduce((s, c) => s + c.balance, 0);
-  const { mIn, mOut, dIn, dOut } = useMemo(() => totals(tx), [tx]);
+  const { mIn, mOut, dIn, dOut, monthlyNet } = useMemo(() => totals(tx), [tx]);
   const recent = tx.slice(0, 6);
-  const lastSalary = tx.find((t) => t.isSalary);
+  const lastSalary = tx.find((x) => x.isSalary);
 
-  function syncNow() {
+  async function syncNow() {
+    const s = loadSettings();
+    if (pollsRemaining(s) <= 0) {
+      const n = nextPollIn(s);
+      toast.error(t("pollLimit", { h: n?.h ?? 0, m: n?.m ?? 0 }));
+      return;
+    }
     setSyncing(true);
-    setTimeout(() => {
-      const r = tick(cards, tx);
-      setCards(r.cards);
-      setTx(r.tx);
-      saveCards(r.cards);
-      saveTx(r.tx);
-      setSyncing(false);
-      toast.success("Synk fullført", {
-        description: r.newTx ? `Ny transaksjon: ${r.newTx.merchant}` : "Ingen nye transaksjoner",
+    try {
+      const res = await fetch("/api/poll-saldo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId: cards[0]?.id ?? "dnb-1" }),
       });
-    }, 600);
+      const data = await res.json();
+      const updatedCards = cards.map((c, i) =>
+        i === 0 ? { ...c, balance: Math.max(0, c.balance + (data.delta ?? 0)) } : c,
+      );
+      setCards(updatedCards);
+      saveCards(updatedCards);
+      const next = recordPoll(s);
+      saveSettings(next);
+      setRemaining(pollsRemaining(next));
+      setNextIn(nextPollIn(next));
+      toast.success(t("pollDone", { p: data.proxy ?? "—" }));
+    } catch {
+      toast.error(t("pollFail"));
+    } finally {
+      setSyncing(false);
+    }
   }
 
   return (
     <AppShell
-      title="God dag 👋"
-      subtitle="Her er dine kort akkurat nå"
+      title={t("greeting") + " 👋"}
+      subtitle={t("subHome")}
       right={
         <button
           onClick={syncNow}
-          aria-label="Synk nå"
-          className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-secondary-foreground transition-colors hover:bg-accent"
+          aria-label={t("syncNow")}
+          disabled={syncing || remaining <= 0}
+          className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-secondary-foreground transition-colors hover:bg-accent disabled:opacity-40"
         >
           <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
         </button>
@@ -102,19 +102,30 @@ function Dashboard() {
       <Toaster position="top-center" />
 
       <section className="balance-card mt-2 overflow-hidden rounded-3xl p-6">
-        <p className="text-xs uppercase tracking-widest text-white/70">Total saldo</p>
-        <p className="tabular mt-2 font-display text-4xl font-semibold">{formatNOK(total)}</p>
-        <p className="mt-1 text-xs text-white/60">{cards.length} kort · oppdatert nå</p>
+        <p className="text-xs uppercase tracking-widest text-white/70">{t("monthlySaldo")}</p>
+        <p className="tabular mt-2 font-display text-4xl font-semibold">
+          {monthlyNet >= 0 ? "+" : ""}{formatNOK(monthlyNet)}
+        </p>
+        <p className="mt-1 text-xs text-white/60">
+          {t("totalBalance")}: {formatNOK(total)}
+        </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <MiniStat icon={<ArrowDownRight className="h-3.5 w-3.5" />} label="Inn i dag" value={formatNOK(dIn)} tone="income" />
-          <MiniStat icon={<ArrowUpRight className="h-3.5 w-3.5" />} label="Ut i dag" value={formatNOK(dOut)} tone="spend" />
+          <MiniStat icon={<ArrowDownRight className="h-3.5 w-3.5" />} label={t("inToday")} value={formatNOK(dIn)} tone="income" />
+          <MiniStat icon={<ArrowUpRight className="h-3.5 w-3.5" />} label={t("outToday")} value={formatNOK(dOut)} tone="spend" />
+        </div>
+
+        <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-[11px] text-white/80">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          <span>
+            {nextIn ? t("pollLimit", { h: nextIn.h, m: nextIn.m }) : t("pollsLeft", { n: remaining })}
+          </span>
         </div>
       </section>
 
       <section className="mt-6 grid grid-cols-2 gap-3">
-        <StatTile label="Inn denne måneden" value={formatNOK(mIn)} accent="income" />
-        <StatTile label="Ut denne måneden" value={formatNOK(mOut)} accent="spend" />
+        <StatTile label={t("inMonth")} value={formatNOK(mIn)} accent="income" />
+        <StatTile label={t("outMonth")} value={formatNOK(mOut)} accent="spend" />
       </section>
 
       {lastSalary && (
@@ -123,7 +134,7 @@ function Dashboard() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">Lønn / NAV oppdaget</p>
+            <p className="truncate text-sm font-medium">{t("salaryDetected")}</p>
             <p className="truncate text-xs text-muted-foreground">{lastSalary.merchant}</p>
           </div>
           <p className="tabular text-sm font-semibold text-[color:var(--income)]">
@@ -134,12 +145,12 @@ function Dashboard() {
 
       <section className="mt-6">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold">Siste aktivitet</h2>
+          <h2 className="font-display text-lg font-semibold">{t("recent")}</h2>
           <Bell className="h-4 w-4 text-muted-foreground" />
         </div>
         <ul className="space-y-2">
-          {recent.map((t) => (
-            <TxRow key={t.id} tx={t} card={cards.find((c) => c.id === t.cardId)} />
+          {recent.map((x) => (
+            <TxRow key={x.id} tx={x} card={cards.find((c) => c.id === x.cardId)} />
           ))}
         </ul>
       </section>
