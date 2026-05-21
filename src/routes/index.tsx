@@ -6,7 +6,6 @@ import { AppShell } from "@/components/AppShell";
 import {
   type Card as CardT,
   type Tx,
-  formatNOK,
   loadCards,
   loadSettings,
   loadTx,
@@ -15,7 +14,6 @@ import {
   recordPoll,
   saveCards,
   saveSettings,
-  saveTx,
   totals,
 } from "@/lib/kronekort";
 import { useLang } from "@/lib/i18n";
@@ -32,7 +30,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
-  const { t } = useLang();
+  const { t, fmt } = useLang();
   const [cards, setCards] = useState<CardT[]>([]);
   const [tx, setTx] = useState<Tx[]>([]);
   const [syncing, setSyncing] = useState(false);
@@ -104,15 +102,15 @@ function Dashboard() {
       <section className="balance-card mt-2 overflow-hidden rounded-3xl p-6">
         <p className="text-xs uppercase tracking-widest text-white/70">{t("monthlySaldo")}</p>
         <p className="tabular mt-2 font-display text-4xl font-semibold">
-          {monthlyNet >= 0 ? "+" : ""}{formatNOK(monthlyNet)}
+          {monthlyNet >= 0 ? "+" : ""}{fmt.money(monthlyNet)}
         </p>
         <p className="mt-1 text-xs text-white/60">
-          {t("totalBalance")}: {formatNOK(total)}
+          {t("totalBalance")}: {fmt.money(total)}
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <MiniStat icon={<ArrowDownRight className="h-3.5 w-3.5" />} label={t("inToday")} value={formatNOK(dIn)} tone="income" />
-          <MiniStat icon={<ArrowUpRight className="h-3.5 w-3.5" />} label={t("outToday")} value={formatNOK(dOut)} tone="spend" />
+          <MiniStat icon={<ArrowDownRight className="h-3.5 w-3.5" />} label={t("inToday")} value={fmt.money(dIn)} tone="income" />
+          <MiniStat icon={<ArrowUpRight className="h-3.5 w-3.5" />} label={t("outToday")} value={fmt.money(dOut)} tone="spend" />
         </div>
 
         <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-[11px] text-white/80">
@@ -124,8 +122,8 @@ function Dashboard() {
       </section>
 
       <section className="mt-6 grid grid-cols-2 gap-3">
-        <StatTile label={t("inMonth")} value={formatNOK(mIn)} accent="income" />
-        <StatTile label={t("outMonth")} value={formatNOK(mOut)} accent="spend" />
+        <StatTile label={t("inMonth")} value={fmt.money(mIn)} accent="income" />
+        <StatTile label={t("outMonth")} value={fmt.money(mOut)} accent="spend" />
       </section>
 
       {lastSalary && (
@@ -138,7 +136,7 @@ function Dashboard() {
             <p className="truncate text-xs text-muted-foreground">{lastSalary.merchant}</p>
           </div>
           <p className="tabular text-sm font-semibold text-[color:var(--income)]">
-            +{formatNOK(lastSalary.amount)}
+            +{fmt.money(lastSalary.amount)}
           </p>
         </section>
       )}
@@ -182,8 +180,8 @@ function StatTile({ label, value, accent }: { label: string; value: string; acce
 }
 
 function TxRow({ tx, card }: { tx: Tx; card?: CardT }) {
+  const { fmt } = useLang();
   const income = tx.amount > 0;
-  const d = new Date(tx.date);
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
       <div className={`grid h-10 w-10 place-items-center rounded-xl text-xs font-semibold ${income ? "bg-[color:var(--income)]/15 text-[color:var(--income)]" : "bg-[color:var(--spend)]/12 text-[color:var(--spend)]"}`}>
@@ -192,12 +190,12 @@ function TxRow({ tx, card }: { tx: Tx; card?: CardT }) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{tx.merchant}</p>
         <p className="truncate text-xs text-muted-foreground">
-          {tx.category} · {card?.name ?? "—"} · {d.toLocaleDateString("nb-NO", { day: "numeric", month: "short" })}
+          {tx.category} · {card?.name ?? "—"} · {fmt.date(tx.date)}
         </p>
       </div>
       <p className={`tabular text-sm font-semibold ${income ? "text-[color:var(--income)]" : ""}`}>
         {income ? "+" : ""}
-        {formatNOK(tx.amount)}
+        {fmt.money(tx.amount)}
       </p>
     </li>
   );
