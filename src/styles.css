@@ -97,8 +97,39 @@
   .tabular { font-variant-numeric: tabular-nums; }
 }
 
+:root {
+  --bcard-a: oklch(0.28 0.08 260);
+  --bcard-b: oklch(0.18 0.06 250);
+  --bcard-c: oklch(0.32 0.1 200);
+  --bcard-shadow: oklch(0.2 0.08 250 / 0.5);
+}
+[data-accent="emerald"] {
+  --primary: oklch(0.55 0.14 160);
+  --ring: oklch(0.65 0.16 160);
+  --bcard-a: oklch(0.32 0.1 165);
+  --bcard-b: oklch(0.2 0.07 160);
+  --bcard-c: oklch(0.4 0.13 155);
+  --bcard-shadow: oklch(0.22 0.09 160 / 0.5);
+}
+[data-accent="coral"] {
+  --primary: oklch(0.62 0.18 25);
+  --ring: oklch(0.7 0.2 25);
+  --bcard-a: oklch(0.35 0.13 30);
+  --bcard-b: oklch(0.22 0.08 20);
+  --bcard-c: oklch(0.42 0.18 35);
+  --bcard-shadow: oklch(0.25 0.1 25 / 0.5);
+}
+[data-accent="violet"] {
+  --primary: oklch(0.5 0.18 295);
+  --ring: oklch(0.65 0.2 295);
+  --bcard-a: oklch(0.32 0.14 295);
+  --bcard-b: oklch(0.2 0.1 290);
+  --bcard-c: oklch(0.4 0.18 285);
+  --bcard-shadow: oklch(0.24 0.13 295 / 0.5);
+}
+
 @utility balance-card {
-  background: linear-gradient(135deg, oklch(0.28 0.08 260) 0%, oklch(0.18 0.06 250) 60%, oklch(0.32 0.1 200) 100%);
+  background: linear-gradient(135deg, var(--bcard-a) 0%, var(--bcard-b) 60%, var(--bcard-c) 100%);
   color: oklch(0.98 0.005 240);
-  box-shadow: 0 20px 50px -20px oklch(0.2 0.08 250 / 0.5);
+  box-shadow: 0 20px 50px -20px var(--bcard-shadow);
 }
