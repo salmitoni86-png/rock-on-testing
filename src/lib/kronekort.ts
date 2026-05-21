@@ -1,10 +1,10 @@
 // Domain layer — DNB Kronekort only. Polling is capped at 6/day and
-// routed through a server-side proxy rotator (see /api/public/poll-saldo).
+// routed through a server-side proxy rotator (see /api/poll-saldo).
 
 export type Card = {
   id: string;
   name: string;
-  provider: "DNB"; // DNB Kronekort only
+  provider: "DNB";
   last4: string;
   balance: number; // NOK
 };
@@ -12,9 +12,9 @@ export type Card = {
 export type Tx = {
   id: string;
   cardId: string;
-  date: string; // ISO
+  date: string;
   merchant: string;
-  amount: number; // negative = spend, positive = income
+  amount: number;
   category: string;
   isSalary?: boolean;
 };
@@ -30,33 +30,58 @@ export function detectSalary(merchant: string, amount: number): boolean {
   return SALARY_KEYWORDS.some((k) => m.includes(k));
 }
 
+// Legacy fallback — UI should use useLang().fmt.money instead.
 export const formatNOK = (n: number) =>
-  new Intl.NumberFormat("nb-NO", {
-    style: "currency",
-    currency: "NOK",
-    maximumFractionDigits: 0,
-  }).format(n);
+  new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 0 }).format(n);
 
 const KEY_CARDS = "kronekort.cards.v2";
 const KEY_TX = "kronekort.tx.v2";
-const KEY_SETTINGS = "kronekort.settings.v2";
+const KEY_SETTINGS = "kronekort.settings.v3";
+
+export type ThemeMode = "light" | "dark" | "system";
+export type Accent = "navy" | "emerald" | "coral" | "violet";
+
+export type NotifChannels = {
+  push: boolean;
+  firebase: boolean;
+  email: boolean;
+  sms: boolean;
+  whatsapp: boolean;
+};
+export type NotifEvents = {
+  salary: boolean;
+  largeSpend: boolean;
+  lowBalance: boolean;
+  dailySummary: boolean;
+  pollDone: boolean;
+};
 
 export type Settings = {
   notifications: boolean;
   mockMode: boolean;
-  pollHistory: number[]; // timestamps (ms) of saldo polls in last 24h
+  pollHistory: number[];
+  theme: ThemeMode;
+  accent: Accent;
+  channels: NotifChannels;
+  events: NotifEvents;
+  contactEmail: string;
+  contactPhone: string;
 };
 
 const DEFAULT_SETTINGS: Settings = {
   notifications: true,
   mockMode: true,
   pollHistory: [],
+  theme: "system",
+  accent: "navy",
+  channels: { push: true, firebase: false, email: false, sms: false, whatsapp: false },
+  events: { salary: true, largeSpend: true, lowBalance: true, dailySummary: false, pollDone: false },
+  contactEmail: "",
+  contactPhone: "",
 };
 
 function seedCards(): Card[] {
-  return [
-    { id: "dnb-1", name: "DNB Kronekort", provider: "DNB", last4: "4821", balance: 18420 },
-  ];
+  return [{ id: "dnb-1", name: "DNB Kronekort", provider: "DNB", last4: "4821", balance: 18420 }];
 }
 
 function seedTx(): Tx[] {
@@ -80,21 +105,13 @@ function seedTx(): Tx[] {
     { cardId: "dnb-1", date: new Date(now - 18 * day).toISOString(), merchant: "Foodora", amount: -287, category: "Mat" },
     { cardId: "dnb-1", date: new Date(now - 20 * day).toISOString(), merchant: "REMA 1000", amount: -456, category: "Mat" },
   ];
-  return items.map((t, i) => ({
-    ...t,
-    id: `t${i}`,
-    isSalary: detectSalary(t.merchant, t.amount),
-  }));
+  return items.map((t, i) => ({ ...t, id: `t${i}`, isSalary: detectSalary(t.merchant, t.amount) }));
 }
 
 function safeGet<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
+  try { const raw = localStorage.getItem(key); return raw ? (JSON.parse(raw) as T) : fallback; }
+  catch { return fallback; }
 }
 function safeSet<T>(key: string, value: T) {
   if (typeof window === "undefined") return;
@@ -104,7 +121,6 @@ function safeSet<T>(key: string, value: T) {
 export function loadCards(): Card[] {
   const existing = safeGet<Card[] | null>(KEY_CARDS, null);
   if (existing && existing.length) {
-    // Enforce DNB-only invariant on legacy stores
     const dnb = existing.filter((c) => c.provider === "DNB");
     if (dnb.length) return dnb;
   }
@@ -124,9 +140,18 @@ export function loadTx(): Tx[] {
 export function saveTx(t: Tx[]) { safeSet(KEY_TX, t); }
 
 export function loadSettings(): Settings {
-  return { ...DEFAULT_SETTINGS, ...safeGet<Partial<Settings>>(KEY_SETTINGS, {}) };
+  const raw = safeGet<Partial<Settings>>(KEY_SETTINGS, {});
+  return {
+    ...DEFAULT_SETTINGS,
+    ...raw,
+    channels: { ...DEFAULT_SETTINGS.channels, ...(raw.channels ?? {}) },
+    events: { ...DEFAULT_SETTINGS.events, ...(raw.events ?? {}) },
+  };
 }
-export function saveSettings(s: Settings) { safeSet(KEY_SETTINGS, s); }
+export function saveSettings(s: Settings) {
+  safeSet(KEY_SETTINGS, s);
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("kronekort:settings"));
+}
 
 export function resetAll() {
   if (typeof window === "undefined") return;
@@ -135,7 +160,6 @@ export function resetAll() {
   localStorage.removeItem(KEY_SETTINGS);
 }
 
-// Polling quota — capped at MAX_POLLS_PER_DAY rolling 24h.
 export function pollsRemaining(s: Settings): number {
   const cutoff = Date.now() - 86400_000;
   const recent = s.pollHistory.filter((t) => t > cutoff);
@@ -172,7 +196,7 @@ export function totals(tx: Tx[]) {
 }
 
 export function dailySeries(tx: Tx[], days = 14) {
-  const out: { day: string; spend: number; income: number }[] = [];
+  const out: { date: Date; spend: number; income: number }[] = [];
   const now = new Date();
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
@@ -181,15 +205,10 @@ export function dailySeries(tx: Tx[], days = 14) {
     for (const t of tx) {
       const ts = new Date(t.date).getTime();
       if (ts >= d.getTime() && ts < next.getTime()) {
-        if (t.amount > 0) income += t.amount;
-        else spend += -t.amount;
+        if (t.amount > 0) income += t.amount; else spend += -t.amount;
       }
     }
-    out.push({
-      day: d.toLocaleDateString("nb-NO", { weekday: "short", day: "numeric" }),
-      spend,
-      income,
-    });
+    out.push({ date: d, spend, income });
   }
   return out;
 }

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { type Card as CardT, formatNOK, loadCards, saveCards } from "@/lib/kronekort";
+import { type Card as CardT, loadCards, saveCards } from "@/lib/kronekort";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/cards")({
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/cards")({
 });
 
 function CardsPage() {
-  const { t } = useLang();
+  const { t, fmt } = useLang();
   const [cards, setCards] = useState<CardT[]>([]);
 
   useEffect(() => setCards(loadCards()), []);
@@ -78,7 +78,7 @@ function CardsPage() {
             <p className="tabular mt-6 font-mono text-base tracking-[0.3em] text-white/80">
               •••• •••• •••• {c.last4}
             </p>
-            <p className="tabular mt-3 font-display text-2xl font-semibold">{formatNOK(c.balance)}</p>
+            <p className="tabular mt-3 font-display text-2xl font-semibold">{fmt.money(c.balance)}</p>
           </li>
         ))}
       </ul>
