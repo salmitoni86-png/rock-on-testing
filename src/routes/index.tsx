@@ -1,202 +1,188 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Bell, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
-import { toast } from "sonner";
-import { AppShell } from "@/components/AppShell";
-import {
-  type Card as CardT,
-  type Tx,
-  loadCards,
-  loadSettings,
-  loadTx,
-  nextPollIn,
-  pollsRemaining,
-  recordPoll,
-  saveCards,
-  saveSettings,
-  totals,
-} from "@/lib/kronekort";
-import { useLang } from "@/lib/i18n";
-import { Toaster } from "@/components/ui/sonner";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Saldo — DNB Kronekort" },
-      { name: "description", content: "Saldo og månedsoversikt for DNB Kronekort." },
+      { title: "Kronekort-X — saldo i sanntid, helt uten styr" },
+      {
+        name: "description",
+        content:
+          "Følg DNB Kronekort-saldoen din automatisk 6 ganger om dagen, del kortet trygt med familien, og få varsel når lønn eller NAV-utbetaling lander.",
+      },
+      { property: "og:title", content: "Kronekort-X — saldo i sanntid, helt uten styr" },
+      {
+        property: "og:description",
+        content: "Automatisk saldo, smart deling og varsler — for hele familien.",
+      },
     ],
   }),
-  component: Dashboard,
+  component: SplashPage,
 });
 
-function Dashboard() {
-  const { t, fmt } = useLang();
-  const [cards, setCards] = useState<CardT[]>([]);
-  const [tx, setTx] = useState<Tx[]>([]);
-  const [syncing, setSyncing] = useState(false);
-  const [remaining, setRemaining] = useState(6);
-  const [nextIn, setNextIn] = useState<{ h: number; m: number } | null>(null);
-
-  useEffect(() => {
-    setCards(loadCards());
-    setTx(loadTx());
-    const s = loadSettings();
-    setRemaining(pollsRemaining(s));
-    setNextIn(nextPollIn(s));
-  }, []);
-
-  const total = cards.reduce((s, c) => s + c.balance, 0);
-  const { mIn, mOut, dIn, dOut, monthlyNet } = useMemo(() => totals(tx), [tx]);
-  const recent = tx.slice(0, 6);
-  const lastSalary = tx.find((x) => x.isSalary);
-
-  async function syncNow() {
-    const s = loadSettings();
-    if (pollsRemaining(s) <= 0) {
-      const n = nextPollIn(s);
-      toast.error(t("pollLimit", { h: n?.h ?? 0, m: n?.m ?? 0 }));
-      return;
-    }
-    setSyncing(true);
-    try {
-      const res = await fetch("/api/poll-saldo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cardId: cards[0]?.id ?? "dnb-1" }),
-      });
-      const data = await res.json();
-      const updatedCards = cards.map((c, i) =>
-        i === 0 ? { ...c, balance: Math.max(0, c.balance + (data.delta ?? 0)) } : c,
-      );
-      setCards(updatedCards);
-      saveCards(updatedCards);
-      const next = recordPoll(s);
-      saveSettings(next);
-      setRemaining(pollsRemaining(next));
-      setNextIn(nextPollIn(next));
-      toast.success(t("pollDone", { p: data.proxy ?? "—" }));
-    } catch {
-      toast.error(t("pollFail"));
-    } finally {
-      setSyncing(false);
-    }
-  }
-
+function SplashPage() {
   return (
-    <AppShell
-      title={t("greeting") + " 👋"}
-      subtitle={t("subHome")}
-      right={
-        <button
-          onClick={syncNow}
-          aria-label={t("syncNow")}
-          disabled={syncing || remaining <= 0}
-          className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-secondary-foreground transition-colors hover:bg-accent disabled:opacity-40"
-        >
-          <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-        </button>
-      }
-    >
-      <Toaster position="top-center" />
-
-      <section className="balance-card mt-2 overflow-hidden rounded-3xl p-6">
-        <p className="text-xs uppercase tracking-widest text-white/70">{t("monthlySaldo")}</p>
-        <p className="tabular mt-2 font-display text-4xl font-semibold">
-          {monthlyNet >= 0 ? "+" : ""}{fmt.money(monthlyNet)}
-        </p>
-        <p className="mt-1 text-xs text-white/60">
-          {t("totalBalance")}: {fmt.money(total)}
-        </p>
-
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <MiniStat icon={<ArrowDownRight className="h-3.5 w-3.5" />} label={t("inToday")} value={fmt.money(dIn)} tone="income" />
-          <MiniStat icon={<ArrowUpRight className="h-3.5 w-3.5" />} label={t("outToday")} value={fmt.money(dOut)} tone="spend" />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 pt-6">
+        <div className="flex items-center gap-2">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-[color:var(--bcard-c)] text-primary-foreground">
+            <CreditCard className="h-4 w-4" />
+          </div>
+          <span className="font-display text-lg font-semibold tracking-tight">Kronekort-X</span>
         </div>
+        <nav className="flex items-center gap-1 sm:gap-3 text-sm">
+          <Link to="/about" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">
+            Om
+          </Link>
+          <Link to="/login" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">
+            Logg inn
+          </Link>
+          <Link
+            to="/signup"
+            className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:opacity-90"
+          >
+            Opprett konto
+          </Link>
+        </nav>
+      </header>
 
-        <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-[11px] text-white/80">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span>
-            {nextIn ? t("pollLimit", { h: nextIn.h, m: nextIn.m }) : t("pollsLeft", { n: remaining })}
-          </span>
+      {/* Hero */}
+      <section className="mx-auto max-w-6xl px-6 pt-16 pb-12 sm:pt-24 sm:pb-20">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+              <Sparkles className="h-3 w-3" />
+              For DNB Kronekort-brukere
+            </span>
+            <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+              Vet hvor kronene dine er
+              <span className="block bg-gradient-to-r from-primary via-[color:var(--bcard-c)] to-[color:var(--salary)] bg-clip-text text-transparent">
+                — før banken gjør det.
+              </span>
+            </h1>
+            <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
+              Kronekort-X henter saldoen din automatisk gjennom dagen, varsler deg når lønn
+              eller NAV lander, og lar deg dele kortet trygt med familien — uten å gi fra
+              deg passord.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/signup"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-90"
+              >
+                Kom i gang gratis <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium hover:bg-accent"
+              >
+                Jeg har allerede konto
+              </Link>
+            </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Ingen kortpassord. Ingen BankID-styr. Bare oversikt.
+            </p>
+          </div>
+
+          {/* Preview card */}
+          <div className="relative">
+            <div className="balance-card mx-auto max-w-sm rounded-3xl p-7">
+              <p className="text-xs uppercase tracking-widest text-white/70">Månedlig saldo</p>
+              <p className="tabular mt-2 font-display text-5xl font-semibold">+42 180 kr</p>
+              <p className="mt-1 text-xs text-white/60">DNB Kronekort · •••• 4821</p>
+
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-white/10 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-[color:var(--income)]">Inn i dag</p>
+                  <p className="tabular mt-1 text-sm font-semibold text-white">+12 450 kr</p>
+                </div>
+                <div className="rounded-2xl bg-white/10 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-[color:var(--spend)]">Ut i dag</p>
+                  <p className="tabular mt-1 text-sm font-semibold text-white">−412 kr</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-[11px] text-white/80">
+                <Sparkles className="h-3.5 w-3.5" />
+                NAV utbetaling oppdaget kl. 08:00
+              </div>
+            </div>
+            <div className="pointer-events-none absolute -inset-x-10 -bottom-10 -top-10 -z-10 rounded-[3rem] bg-gradient-to-tr from-primary/10 via-transparent to-[color:var(--bcard-c)]/20 blur-3xl" />
+          </div>
         </div>
       </section>
 
-      <section className="mt-6 grid grid-cols-2 gap-3">
-        <StatTile label={t("inMonth")} value={fmt.money(mIn)} accent="income" />
-        <StatTile label={t("outMonth")} value={fmt.money(mOut)} accent="spend" />
+      {/* Features */}
+      <section className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          Tre ting som gjør hverdagen enklere
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
+          Bygd for folk som vil ha kontroll uten å åpne nettbanken hver halvtime.
+        </p>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          <Feature
+            icon={<RefreshCw className="h-5 w-5" />}
+            title="Automatisk saldo, 6× om dagen"
+            body="Kortet oppdateres kl. 08, 10, 12, 14, 16 og 20 — uten at du løfter en finger. Inaktive kort sjekkes én gang i døgnet."
+          />
+          <Feature
+            icon={<Users className="h-5 w-5" />}
+            title="Del kortet trygt med familien"
+            body="Inviter samboer, barn eller foreldre med brukernavn. Du godkjenner hver tilgang — og kan fjerne den når du vil."
+          />
+          <Feature
+            icon={<Bell className="h-5 w-5" />}
+            title="Lønn, NAV og store kjøp"
+            body="Få push, e-post, SMS eller WhatsApp idet lønna lander eller saldoen synker under terskelen din."
+          />
+        </div>
       </section>
 
-      {lastSalary && (
-        <section className="mt-6 flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[color:var(--salary)]/15 text-[color:var(--salary)]">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{t("salaryDetected")}</p>
-            <p className="truncate text-xs text-muted-foreground">{lastSalary.merchant}</p>
-          </div>
-          <p className="tabular text-sm font-semibold text-[color:var(--income)]">
-            +{fmt.money(lastSalary.amount)}
+      {/* Trust */}
+      <section className="mx-auto max-w-4xl px-6 pb-20 text-center">
+        <div className="rounded-3xl border border-border bg-card p-8">
+          <ShieldCheck className="mx-auto h-8 w-8 text-[color:var(--income)]" />
+          <h3 className="mt-4 font-display text-xl font-semibold">Trygghet først</h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+            Vi lagrer aldri BankID eller kortpassord. All deling går gjennom godkjenning fra
+            kortets eier, og data ligger trygt i Lovable Cloud.
           </p>
-        </section>
-      )}
-
-      <section className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold">{t("recent")}</h2>
-          <Bell className="h-4 w-4 text-muted-foreground" />
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              to="/signup"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              Opprett konto
+            </Link>
+            <Link
+              to="/about"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-5 py-3 text-sm font-medium hover:bg-accent"
+            >
+              Les mer om prosjektet
+            </Link>
+          </div>
         </div>
-        <ul className="space-y-2">
-          {recent.map((x) => (
-            <TxRow key={x.id} tx={x} card={cards.find((c) => c.id === x.cardId)} />
-          ))}
-        </ul>
       </section>
-    </AppShell>
-  );
-}
 
-function MiniStat({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: "income" | "spend" }) {
-  return (
-    <div className="rounded-2xl bg-white/10 p-3 backdrop-blur">
-      <div className={`flex items-center gap-1 text-[10px] uppercase tracking-wider ${tone === "income" ? "text-[color:var(--income)]" : "text-[color:var(--spend)]"}`}>
-        {icon}
-        <span>{label}</span>
-      </div>
-      <p className="tabular mt-1 text-sm font-semibold text-white">{value}</p>
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
+        Kronekort-X · Bygget med ❤ i Norge ·{" "}
+        <Link to="/about" className="underline hover:text-foreground">
+          Støtt utviklerne
+        </Link>
+      </footer>
     </div>
   );
 }
 
-function StatTile({ label, value, accent }: { label: string; value: string; accent: "income" | "spend" }) {
+function Feature({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`tabular mt-1 font-display text-xl font-semibold ${accent === "income" ? "text-[color:var(--income)]" : "text-[color:var(--spend)]"}`}>
-        {value}
-      </p>
+    <div className="rounded-3xl border border-border bg-card p-6 transition-colors hover:bg-accent/40">
+      <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">{icon}</div>
+      <h3 className="mt-4 font-display text-lg font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
     </div>
-  );
-}
-
-function TxRow({ tx, card }: { tx: Tx; card?: CardT }) {
-  const { fmt } = useLang();
-  const income = tx.amount > 0;
-  return (
-    <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
-      <div className={`grid h-10 w-10 place-items-center rounded-xl text-xs font-semibold ${income ? "bg-[color:var(--income)]/15 text-[color:var(--income)]" : "bg-[color:var(--spend)]/12 text-[color:var(--spend)]"}`}>
-        {tx.merchant.slice(0, 2).toUpperCase()}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{tx.merchant}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {tx.category} · {card?.name ?? "—"} · {fmt.date(tx.date)}
-        </p>
-      </div>
-      <p className={`tabular text-sm font-semibold ${income ? "text-[color:var(--income)]" : ""}`}>
-        {income ? "+" : ""}
-        {fmt.money(tx.amount)}
-      </p>
-    </li>
   );
 }
