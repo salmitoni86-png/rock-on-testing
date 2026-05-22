@@ -14,13 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      card_balances: {
+        Row: {
+          balance: number
+          card_id: string
+          id: number
+          polled_at: string
+          proxy_used: string | null
+        }
+        Insert: {
+          balance: number
+          card_id: string
+          id?: number
+          polled_at?: string
+          proxy_used?: string | null
+        }
+        Update: {
+          balance?: number
+          card_id?: string
+          id?: number
+          polled_at?: string
+          proxy_used?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_balances_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_members: {
+        Row: {
+          accepted_at: string
+          card_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          card_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          card_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_members_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_share_requests: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          requested_by: string
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          requested_by: string
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          requested_by?: string
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_share_requests_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cards: {
+        Row: {
+          card_number: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_balance: number | null
+          last_polled_at: string | null
+          last4: string | null
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          card_number: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_balance?: number | null
+          last_polled_at?: string | null
+          last4?: string | null
+          name?: string
+          owner_id: string
+        }
+        Update: {
+          card_number?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_balance?: number | null
+          last_polled_at?: string | null
+          last4?: string | null
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_card_member: {
+        Args: { _card_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_card_owner: {
+        Args: { _card_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
