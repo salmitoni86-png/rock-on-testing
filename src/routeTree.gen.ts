@@ -18,6 +18,8 @@ import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedCardsRouteImport } from './routes/_authenticated/cards'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedCardsIdRouteImport } from './routes/_authenticated/cards.$id'
+import { Route as AuthenticatedCardsIdPrintRouteImport } from './routes/_authenticated/cards.$id.print'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -63,6 +65,17 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCardsIdRoute = AuthenticatedCardsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedCardsRoute,
+} as any)
+const AuthenticatedCardsIdPrintRoute =
+  AuthenticatedCardsIdPrintRouteImport.update({
+    id: '/print',
+    path: '/print',
+    getParentRoute: () => AuthenticatedCardsIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -70,9 +83,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app': typeof AuthenticatedAppRoute
-  '/cards': typeof AuthenticatedCardsRoute
+  '/cards': typeof AuthenticatedCardsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
+  '/cards/$id': typeof AuthenticatedCardsIdRouteWithChildren
+  '/cards/$id/print': typeof AuthenticatedCardsIdPrintRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -80,9 +95,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app': typeof AuthenticatedAppRoute
-  '/cards': typeof AuthenticatedCardsRoute
+  '/cards': typeof AuthenticatedCardsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
+  '/cards/$id': typeof AuthenticatedCardsIdRouteWithChildren
+  '/cards/$id/print': typeof AuthenticatedCardsIdPrintRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -92,9 +109,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
-  '/_authenticated/cards': typeof AuthenticatedCardsRoute
+  '/_authenticated/cards': typeof AuthenticatedCardsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
+  '/_authenticated/cards/$id': typeof AuthenticatedCardsIdRouteWithChildren
+  '/_authenticated/cards/$id/print': typeof AuthenticatedCardsIdPrintRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +126,8 @@ export interface FileRouteTypes {
     | '/cards'
     | '/settings'
     | '/stats'
+    | '/cards/$id'
+    | '/cards/$id/print'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +138,8 @@ export interface FileRouteTypes {
     | '/cards'
     | '/settings'
     | '/stats'
+    | '/cards/$id'
+    | '/cards/$id/print'
   id:
     | '__root__'
     | '/'
@@ -128,6 +151,8 @@ export interface FileRouteTypes {
     | '/_authenticated/cards'
     | '/_authenticated/settings'
     | '/_authenticated/stats'
+    | '/_authenticated/cards/$id'
+    | '/_authenticated/cards/$id/print'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -203,19 +228,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cards/$id': {
+      id: '/_authenticated/cards/$id'
+      path: '/$id'
+      fullPath: '/cards/$id'
+      preLoaderRoute: typeof AuthenticatedCardsIdRouteImport
+      parentRoute: typeof AuthenticatedCardsRoute
+    }
+    '/_authenticated/cards/$id/print': {
+      id: '/_authenticated/cards/$id/print'
+      path: '/print'
+      fullPath: '/cards/$id/print'
+      preLoaderRoute: typeof AuthenticatedCardsIdPrintRouteImport
+      parentRoute: typeof AuthenticatedCardsIdRoute
+    }
   }
 }
 
+interface AuthenticatedCardsIdRouteChildren {
+  AuthenticatedCardsIdPrintRoute: typeof AuthenticatedCardsIdPrintRoute
+}
+
+const AuthenticatedCardsIdRouteChildren: AuthenticatedCardsIdRouteChildren = {
+  AuthenticatedCardsIdPrintRoute: AuthenticatedCardsIdPrintRoute,
+}
+
+const AuthenticatedCardsIdRouteWithChildren =
+  AuthenticatedCardsIdRoute._addFileChildren(AuthenticatedCardsIdRouteChildren)
+
+interface AuthenticatedCardsRouteChildren {
+  AuthenticatedCardsIdRoute: typeof AuthenticatedCardsIdRouteWithChildren
+}
+
+const AuthenticatedCardsRouteChildren: AuthenticatedCardsRouteChildren = {
+  AuthenticatedCardsIdRoute: AuthenticatedCardsIdRouteWithChildren,
+}
+
+const AuthenticatedCardsRouteWithChildren =
+  AuthenticatedCardsRoute._addFileChildren(AuthenticatedCardsRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
-  AuthenticatedCardsRoute: typeof AuthenticatedCardsRoute
+  AuthenticatedCardsRoute: typeof AuthenticatedCardsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
-  AuthenticatedCardsRoute: AuthenticatedCardsRoute,
+  AuthenticatedCardsRoute: AuthenticatedCardsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
 }
