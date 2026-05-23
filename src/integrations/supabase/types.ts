@@ -167,6 +167,50 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          amount_nok: number
+          card_id: string
+          category: string | null
+          created_at: string
+          external_id: string | null
+          id: string
+          is_salary: boolean
+          merchant: string
+          posted_at: string
+        }
+        Insert: {
+          amount_nok: number
+          card_id: string
+          category?: string | null
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          is_salary?: boolean
+          merchant: string
+          posted_at: string
+        }
+        Update: {
+          amount_nok?: number
+          card_id?: string
+          category?: string | null
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          is_salary?: boolean
+          merchant?: string
+          posted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -180,6 +224,7 @@ export type Database = {
         Args: { _card_id: string; _user_id: string }
         Returns: boolean
       }
+      seed_mock_transactions: { Args: { _card_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

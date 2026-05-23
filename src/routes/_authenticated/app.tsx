@@ -1,38 +1,51 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Bell, LogOut, Sparkles } from "lucide-react";
+import { ArrowRight, LogOut, Sparkles, Wand2 } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import {
-  type Card as CardT, type Tx,
-  loadCards, loadTx, totals,
-} from "@/lib/kronekort";
-import { useLang } from "@/lib/i18n";
+import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useLang } from "@/lib/i18n";
+import { listTransactions, seedMockTransactions, summarize, type Transaction } from "@/lib/transactions";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Saldo — Kronekort-X" }] }),
   component: Dashboard,
 });
 
+type Card = {
+  id: string; name: string; last4: string | null;
+  last_balance: number | null; owner_id: string;
+};
+
 function Dashboard() {
   const { t, fmt } = useLang();
-  const [cards, setCards] = useState<CardT[]>([]);
-  const [tx, setTx] = useState<Tx[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [byCard, setByCard] = useState<Record<string, Transaction[]>>({});
 
-  useEffect(() => {
-    setCards(loadCards());
-    setTx(loadTx());
-  }, []);
+  async function load() {
+    const { data: cs } = await supabase.from("cards").select("id,name,last4,last_balance,owner_id").order("created_at");
+    const list = (cs as Card[]) ?? [];
+    setCards(list);
+    const entries = await Promise.all(
+      list.map(async (c) => {
+        const { rows } = await listTransactions({ cardId: c.id, page: 0, pageSize: 6 });
+        return [c.id, rows] as const;
+      })
+    );
+    setByCard(Object.fromEntries(entries));
+  }
+  useEffect(() => { load(); }, []);
 
-  const total = cards.reduce((s, c) => s + c.balance, 0);
-  const { mIn, mOut, dIn, dOut, monthlyNet } = useMemo(() => totals(tx), [tx]);
-  const recent = tx.slice(0, 6);
-  const lastSalary = tx.find((x) => x.isSalary);
+  async function seed(cardId: string) {
+    try { await seedMockTransactions(cardId); toast.success("Demo-data lagt til"); load(); }
+    catch (e: any) { toast.error(e.message ?? "Feilet"); }
+  }
 
   return (
     <AppShell
       title={t("greeting") + " 👋"}
-      subtitle={t("subHome")}
+      subtitle={cards.length ? `${cards.length} ${cards.length === 1 ? "kort" : "kort"}` : t("subHome")}
       right={
         <button
           onClick={() => supabase.auth.signOut()}
@@ -43,84 +56,103 @@ function Dashboard() {
         </button>
       }
     >
-      <section className="balance-card mt-2 overflow-hidden rounded-3xl p-6">
-        <p className="text-xs uppercase tracking-widest text-white/70">{t("monthlySaldo")}</p>
-        <p className="tabular mt-2 font-display text-4xl font-semibold">
-          {monthlyNet >= 0 ? "+" : ""}{fmt.money(monthlyNet)}
-        </p>
-        <p className="mt-1 text-xs text-white/60">{t("totalBalance")}: {fmt.money(total)}</p>
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <Mini icon={<ArrowDownRight className="h-3.5 w-3.5" />} label={t("inToday")} value={fmt.money(dIn)} tone="income" />
-          <Mini icon={<ArrowUpRight className="h-3.5 w-3.5" />} label={t("outToday")} value={fmt.money(dOut)} tone="spend" />
+      <Toaster position="top-center" />
+
+      {cards.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-8 text-center">
+          <p className="text-sm text-muted-foreground">Ingen kort registrert enda.</p>
+          <Link to="/cards" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+            Legg til DNB Kronekort <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-      </section>
-
-      <section className="mt-6 grid grid-cols-2 gap-3">
-        <Tile label={t("inMonth")} value={fmt.money(mIn)} accent="income" />
-        <Tile label={t("outMonth")} value={fmt.money(mOut)} accent="spend" />
-      </section>
-
-      {lastSalary && (
-        <section className="mt-6 flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[color:var(--salary)]/15 text-[color:var(--salary)]">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{t("salaryDetected")}</p>
-            <p className="truncate text-xs text-muted-foreground">{lastSalary.merchant}</p>
-          </div>
-          <p className="tabular text-sm font-semibold text-[color:var(--income)]">+{fmt.money(lastSalary.amount)}</p>
-        </section>
-      )}
-
-      <section className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold">{t("recent")}</h2>
-          <Bell className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <ul className="space-y-2">
-          {recent.map((x) => (
-            <Row key={x.id} tx={x} card={cards.find((c) => c.id === x.cardId)} />
+      ) : (
+        <div className="mt-2 space-y-6">
+          {cards.map((c) => (
+            <AccountSection key={c.id} card={c} txs={byCard[c.id] ?? []} onSeed={() => seed(c.id)} fmt={fmt} />
           ))}
-        </ul>
-      </section>
+        </div>
+      )}
     </AppShell>
   );
 }
 
-function Mini({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: "income" | "spend" }) {
+function AccountSection({
+  card, txs, onSeed, fmt,
+}: { card: Card; txs: Transaction[]; onSeed: () => void; fmt: ReturnType<typeof useLang>["fmt"] }) {
+  const sums = useMemo(() => summarize(txs), [txs]);
+  const lastSalary = txs.find((t) => t.is_salary);
+
   return (
-    <div className="rounded-2xl bg-white/10 p-3">
-      <div className={`flex items-center gap-1 text-[10px] uppercase tracking-wider ${tone === "income" ? "text-[color:var(--income)]" : "text-[color:var(--spend)]"}`}>
-        {icon}<span>{label}</span>
+    <section>
+      <div className="balance-card overflow-hidden rounded-3xl p-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-white/70">DNB · Kronekort</p>
+            <p className="mt-1 font-display text-lg font-semibold">{card.name}</p>
+          </div>
+          <p className="font-mono text-xs tracking-[0.3em] text-white/70">•••• {card.last4 ?? "0000"}</p>
+        </div>
+        <p className="tabular mt-4 font-display text-3xl font-semibold">
+          {card.last_balance != null ? fmt.money(Number(card.last_balance)) : "—"}
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
+          <div className="rounded-xl bg-white/10 p-2">
+            <p className="uppercase tracking-wider text-[color:var(--income)]">Inn (siste)</p>
+            <p className="tabular text-sm font-semibold text-white">{fmt.money(sums.income)}</p>
+          </div>
+          <div className="rounded-xl bg-white/10 p-2">
+            <p className="uppercase tracking-wider text-[color:var(--spend)]">Ut (siste)</p>
+            <p className="tabular text-sm font-semibold text-white">{fmt.money(sums.spend)}</p>
+          </div>
+        </div>
       </div>
-      <p className="tabular mt-1 text-sm font-semibold text-white">{value}</p>
-    </div>
-  );
-}
-function Tile({ label, value, accent }: { label: string; value: string; accent: "income" | "spend" }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`tabular mt-1 font-display text-xl font-semibold ${accent === "income" ? "text-[color:var(--income)]" : "text-[color:var(--spend)]"}`}>{value}</p>
-    </div>
-  );
-}
-function Row({ tx, card }: { tx: Tx; card?: CardT }) {
-  const { fmt } = useLang();
-  const income = tx.amount > 0;
-  return (
-    <li className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
-      <div className={`grid h-10 w-10 place-items-center rounded-xl text-xs font-semibold ${income ? "bg-[color:var(--income)]/15 text-[color:var(--income)]" : "bg-[color:var(--spend)]/12 text-[color:var(--spend)]"}`}>
-        {tx.merchant.slice(0, 2).toUpperCase()}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{tx.merchant}</p>
-        <p className="truncate text-xs text-muted-foreground">{tx.category} · {card?.name ?? "—"} · {fmt.date(tx.date)}</p>
-      </div>
-      <p className={`tabular text-sm font-semibold ${income ? "text-[color:var(--income)]" : ""}`}>
-        {income ? "+" : ""}{fmt.money(tx.amount)}
-      </p>
-    </li>
+
+      {lastSalary && (
+        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-[color:var(--salary)]/15 text-[color:var(--salary)]">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">Lønn / NAV oppdaget</p>
+            <p className="truncate text-xs text-muted-foreground">{lastSalary.merchant}</p>
+          </div>
+          <p className="tabular text-sm font-semibold text-[color:var(--income)]">+{fmt.money(Number(lastSalary.amount_nok))}</p>
+        </div>
+      )}
+
+      {txs.length === 0 ? (
+        <div className="mt-3 rounded-2xl border border-dashed border-border p-5 text-center">
+          <p className="text-sm text-muted-foreground">Ingen transaksjoner enda</p>
+          <button onClick={onSeed} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-1.5 text-xs hover:bg-accent">
+            <Wand2 className="h-3.5 w-3.5" /> Generer demo-data
+          </button>
+        </div>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {txs.map((tx) => (
+            <li key={tx.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+              <div className={`grid h-10 w-10 place-items-center rounded-xl text-xs font-semibold ${tx.amount_nok > 0 ? "bg-[color:var(--income)]/15 text-[color:var(--income)]" : "bg-[color:var(--spend)]/12 text-[color:var(--spend)]"}`}>
+                {tx.merchant.slice(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{tx.merchant}</p>
+                <p className="truncate text-xs text-muted-foreground">{tx.category ?? "—"} · {fmt.date(tx.posted_at)}</p>
+              </div>
+              <p className={`tabular text-sm font-semibold ${tx.amount_nok > 0 ? "text-[color:var(--income)]" : ""}`}>
+                {tx.amount_nok > 0 ? "+" : ""}{fmt.money(Number(tx.amount_nok))}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Link
+        to="/cards/$id"
+        params={{ id: card.id }}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+      >
+        Alle transaksjoner <ArrowRight className="h-3 w-3" />
+      </Link>
+    </section>
   );
 }
