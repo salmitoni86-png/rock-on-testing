@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/cards")({
 });
 
 type Card = {
-  id: string; name: string; card_number: string; last4: string;
+  id: string; name: string; card_number: string; last4: string | null;
   is_active: boolean; last_balance: number | null; owner_id: string;
 };
 type Member = { card_id: string; user_id: string; role: string; username?: string };

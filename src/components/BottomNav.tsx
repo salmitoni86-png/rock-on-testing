@@ -6,7 +6,7 @@ export function BottomNav() {
   const { pathname } = useLocation();
   const { t } = useLang();
   const items = [
-    { to: "/", label: t("navHome"), Icon: Home },
+    { to: "/app", label: t("navHome"), Icon: Home },
     { to: "/cards", label: t("navCards"), Icon: CreditCard },
     { to: "/stats", label: t("navStats"), Icon: BarChart3 },
     { to: "/settings", label: t("navSettings"), Icon: Settings },
