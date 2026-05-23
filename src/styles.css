@@ -133,3 +133,8 @@
   color: oklch(0.98 0.005 240);
   box-shadow: 0 20px 50px -20px var(--bcard-shadow);
 }
+
+@media print {
+  body { background: white !important; }
+  .print\:hidden { display: none !important; }
+}
