@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell } from "lucide-react";
+import { LivingBackground, HeroText } from "@/components/LivingBackground";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,7 +23,8 @@ export const Route = createFileRoute("/")({
 
 function SplashPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
+      <LivingBackground />
       {/* Header */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 pt-6">
         <div className="flex items-center gap-2">
@@ -56,9 +58,9 @@ function SplashPage() {
               For DNB Kronekort-brukere
             </span>
             <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-              Vet hvor kronene dine er
+              <HeroText text="Vet hvor kronene dine er" />
               <span className="block bg-gradient-to-r from-primary via-[color:var(--bcard-c)] to-[color:var(--salary)] bg-clip-text text-transparent">
-                — før banken gjør det.
+                <HeroText text="— før banken gjør det." />
               </span>
             </h1>
             <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
