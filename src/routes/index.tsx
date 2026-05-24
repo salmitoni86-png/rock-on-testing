@@ -37,12 +37,10 @@ function SplashPage() {
           <span className="font-display text-lg font-semibold tracking-tight">Kronekort-X</span>
         </div>
         <nav className="flex items-center gap-1 sm:gap-3 text-sm">
-          <Link to="/about" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">
-            Om
-          </Link>
-          <Link to="/login" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">
-            Logg inn
-          </Link>
+          <Link to="/blog" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Blogg</Link>
+          <Link to="/analytics" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Live</Link>
+          <Link to="/about" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Om</Link>
+          <Link to="/login" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Logg inn</Link>
           <Link
             to="/signup"
             className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:opacity-90"
