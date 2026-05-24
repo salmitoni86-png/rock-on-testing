@@ -170,6 +170,33 @@ function SplashPage() {
         </div>
       </section>
 
+      {/* Demo video */}
+      <DemoVideoSection />
+
+      {/* Live map preview */}
+      <section className="mx-auto max-w-6xl px-6 py-12">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+              <Globe className="h-3 w-3" /> Live
+            </span>
+            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Aktive akkurat nå</h2>
+          </div>
+          <Link to="/analytics" className="hidden text-sm text-primary hover:underline sm:inline">Åpne full visning →</Link>
+        </div>
+        <div className="mt-6"><LiveWorldMap /></div>
+      </section>
+
+      {/* Share */}
+      <section className="mx-auto max-w-3xl px-6 py-8">
+        <div className="flex items-center gap-2 pb-3">
+          <BookOpen className="h-4 w-4 text-muted-foreground" />
+          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground">Les bloggen →</Link>
+        </div>
+        <ShareBar />
+      </section>
+
+
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
         Kronekort-X · Bygget med ❤ i Norge ·{" "}
         <Link to="/about" className="underline hover:text-foreground">
