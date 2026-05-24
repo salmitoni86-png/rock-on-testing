@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell } from "lucide-react";
+import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell, Globe, BookOpen } from "lucide-react";
 import { LivingBackground, HeroText } from "@/components/LivingBackground";
+import { DemoVideoSection } from "@/components/DemoVideoSection";
+import { ShareBar } from "@/components/ShareBar";
+import { LiveWorldMap } from "@/components/LiveWorldMap";
 
 export const Route = createFileRoute("/")({
   head: () => ({

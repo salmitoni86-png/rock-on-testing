@@ -12,6 +12,8 @@ import { useEffect } from "react";
 import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { SupportChat } from "@/components/SupportChat";
+import { VisitTracker } from "@/components/VisitTracker";
 
 function NotFoundComponent() {
   return (
@@ -120,7 +122,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthInvalidator />
+        <VisitTracker />
         <Outlet />
+        <SupportChat />
       </ThemeProvider>
     </QueryClientProvider>
   );
