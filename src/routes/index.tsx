@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell } from "lucide-react";
+import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell, Globe, BookOpen } from "lucide-react";
 import { LivingBackground, HeroText } from "@/components/LivingBackground";
+import { DemoVideoSection } from "@/components/DemoVideoSection";
+import { ShareBar } from "@/components/ShareBar";
+import { LiveWorldMap } from "@/components/LiveWorldMap";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,12 +37,10 @@ function SplashPage() {
           <span className="font-display text-lg font-semibold tracking-tight">Kronekort-X</span>
         </div>
         <nav className="flex items-center gap-1 sm:gap-3 text-sm">
-          <Link to="/about" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">
-            Om
-          </Link>
-          <Link to="/login" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">
-            Logg inn
-          </Link>
+          <Link to="/blog" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Blogg</Link>
+          <Link to="/analytics" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Live</Link>
+          <Link to="/about" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Om</Link>
+          <Link to="/login" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Logg inn</Link>
           <Link
             to="/signup"
             className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:opacity-90"
@@ -168,6 +169,33 @@ function SplashPage() {
           </div>
         </div>
       </section>
+
+      {/* Demo video */}
+      <DemoVideoSection />
+
+      {/* Live map preview */}
+      <section className="mx-auto max-w-6xl px-6 py-12">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+              <Globe className="h-3 w-3" /> Live
+            </span>
+            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Aktive akkurat nå</h2>
+          </div>
+          <Link to="/analytics" className="hidden text-sm text-primary hover:underline sm:inline">Åpne full visning →</Link>
+        </div>
+        <div className="mt-6"><LiveWorldMap /></div>
+      </section>
+
+      {/* Share */}
+      <section className="mx-auto max-w-3xl px-6 py-8">
+        <div className="flex items-center gap-2 pb-3">
+          <BookOpen className="h-4 w-4 text-muted-foreground" />
+          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground">Les bloggen →</Link>
+        </div>
+        <ShareBar />
+      </section>
+
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
         Kronekort-X · Bygget med ❤ i Norge ·{" "}
