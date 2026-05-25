@@ -124,6 +124,7 @@ function RootComponent() {
       <ThemeProvider>
         <AuthInvalidator />
         <VisitTracker />
+        <LanguageSwitcher />
         <Outlet />
         <SupportChat />
       </ThemeProvider>
