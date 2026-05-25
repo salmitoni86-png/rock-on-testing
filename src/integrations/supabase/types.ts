@@ -311,22 +311,43 @@ export type Database = {
       }
       profiles: {
         Row: {
+          contact_email: string | null
           created_at: string
+          discord: string | null
           display_name: string | null
           id: string
+          phone: string | null
+          referred_by_code: string | null
+          snapchat: string | null
+          telegram: string | null
           username: string
+          whatsapp: string | null
         }
         Insert: {
+          contact_email?: string | null
           created_at?: string
+          discord?: string | null
           display_name?: string | null
           id: string
+          phone?: string | null
+          referred_by_code?: string | null
+          snapchat?: string | null
+          telegram?: string | null
           username: string
+          whatsapp?: string | null
         }
         Update: {
+          contact_email?: string | null
           created_at?: string
+          discord?: string | null
           display_name?: string | null
           id?: string
+          phone?: string | null
+          referred_by_code?: string | null
+          snapchat?: string | null
+          telegram?: string | null
           username?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
