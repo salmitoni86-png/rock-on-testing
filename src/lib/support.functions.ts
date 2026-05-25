@@ -2,20 +2,22 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const SYSTEM_PROMPT = `Du er Kronekort-X sin AI-supportbot. Svar kort og hjelpsomt på norsk.
-App-funksjoner du kjenner: automatisk saldo for DNB Kronekort 6× om dagen, deling med familie via brukernavn, push/SMS/e-post varsler, VIP/SoS-medlemskap (5€/mnd) med lånetilbud, transaksjonshistorikk med utskrift, blogg, og henvisningssystem.
-Hvis brukeren ber om å snakke med et menneske eller du ikke kan hjelpe — sett human_handoff=true i tool-kallet.
-Vær vennlig, kort, og bruk maks 3 setninger per svar.`;
+const SYSTEM_PROMPT_BASE = `You are Kronekort-X's AI support bot. Keep answers short and helpful.
+App features you know: automatic balance polling for DNB Kronekort 6x/day, sharing with family via username, push/SMS/email/WhatsApp/Discord/Telegram alerts, VIP/SoS membership (€5/mo) with loan offers (1x-3x rating + custom), transaction history with print export, blog, referral/invite system with tier rewards.
+If the user asks for a human or you can't help — set human_handoff=true in the tool call.
+Be friendly, concise, max 3 sentences per reply.`;
 
 export const sendSupportMessage = createServerFn({ method: "POST" })
-  .inputValidator((d: { conversationId?: string; anonId: string; body: string }) =>
+  .inputValidator((d: { conversationId?: string; anonId: string; body: string; lang?: string }) =>
     z.object({
       conversationId: z.string().uuid().optional(),
       anonId: z.string().min(1).max(80),
       body: z.string().min(1).max(2000),
+      lang: z.string().min(1).max(40).optional(),
     }).parse(d)
   )
   .handler(async ({ data }) => {
+    const systemPrompt = `${SYSTEM_PROMPT_BASE}\nReply in this language: ${data.lang ?? "Norsk"}. Match the user's language if they switch.`;
     // 1. Find or create conversation
     let convId = data.conversationId;
     if (!convId) {
