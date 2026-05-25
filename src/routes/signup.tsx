@@ -92,6 +92,11 @@ function SignupPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Brukernavnet ditt brukes når andre vil dele kortet sitt med deg.
         </p>
+        {refCode && (
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[color:var(--income)]/40 bg-[color:var(--income)]/10 px-3 py-1.5 text-xs text-[color:var(--income)]">
+            🎁 Invitert med kode <span className="font-mono font-semibold">{refCode}</span>
+          </div>
+        )}
 
         <button
           onClick={google}
