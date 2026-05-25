@@ -42,7 +42,7 @@ export const sendSupportMessage = createServerFn({ method: "POST" })
       .limit(40);
 
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
       ...(history ?? []).map((m) => ({
         role: m.role === "staff" ? "assistant" : m.role,
         content: m.body,
