@@ -20,6 +20,23 @@ function SignupPage() {
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [refCode, setRefCode] = useState<string>("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const ref = url.searchParams.get("ref");
+    if (ref) {
+      const clean = ref.trim().toLowerCase().slice(0, 32);
+      setRefCode(clean);
+      try { localStorage.setItem("kkx_ref_code", clean); } catch {}
+    } else {
+      try {
+        const stored = localStorage.getItem("kkx_ref_code");
+        if (stored) setRefCode(stored);
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/app" });
@@ -38,18 +55,26 @@ function SignupPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin + "/app",
-        data: { username: u, display_name: displayName || u },
+        data: {
+          username: u,
+          display_name: displayName || u,
+          ...(refCode ? { ref_code: refCode } : {}),
+        },
       },
     });
     setBusy(false);
     if (error) toast.error(error.message);
     else {
+      try { localStorage.removeItem("kkx_ref_code"); } catch {}
       toast.success("Sjekk e-posten for bekreftelseslenke");
       navigate({ to: "/login" });
     }
   }
 
   async function google() {
+    if (refCode) {
+      try { localStorage.setItem("kkx_ref_code", refCode); } catch {}
+    }
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/app" });
     if (r.error) toast.error(r.error.message ?? "Google-pålogging feilet");
   }
@@ -67,6 +92,11 @@ function SignupPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Brukernavnet ditt brukes når andre vil dele kortet sitt med deg.
         </p>
+        {refCode && (
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[color:var(--income)]/40 bg-[color:var(--income)]/10 px-3 py-1.5 text-xs text-[color:var(--income)]">
+            🎁 Invitert med kode <span className="font-mono font-semibold">{refCode}</span>
+          </div>
+        )}
 
         <button
           onClick={google}
