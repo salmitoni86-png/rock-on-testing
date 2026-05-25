@@ -14,6 +14,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportChat } from "@/components/SupportChat";
 import { VisitTracker } from "@/components/VisitTracker";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 function NotFoundComponent() {
   return (
