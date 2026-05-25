@@ -3,12 +3,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, UserCheck } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { sendSupportMessage } from "@/lib/support.functions";
+import { useLang, LANGS } from "@/lib/i18n";
 
 type Msg = { role: "user" | "assistant"; body: string };
 
-const INTRO: Msg = {
-  role: "assistant",
-  body: "Hei! 👋 Jeg er Kronekort-X sin AI-assistent. Hva kan jeg hjelpe deg med i dag? (Skriv 'menneske' om du vil snakke med support.)",
+const INTRO_BY_LANG: Record<string, string> = {
+  no: "Hei! 👋 Jeg er Kronekort-X sin AI-assistent. Hva kan jeg hjelpe deg med i dag? (Skriv 'menneske' om du vil snakke med support.)",
+  en: "Hi! 👋 I'm the Kronekort-X AI assistant. How can I help you today? (Type 'human' to talk to a real person.)",
+  sv: "Hej! 👋 Jag är Kronekort-X AI-assistent. Hur kan jag hjälpa dig? (Skriv 'människa' för att prata med support.)",
+  da: "Hej! 👋 Jeg er Kronekort-X AI-assistent. Hvad kan jeg hjælpe med? (Skriv 'menneske' for at tale med support.)",
+  fi: "Hei! 👋 Olen Kronekort-X AI-avustaja. Miten voin auttaa? (Kirjoita 'ihminen' puhuaksesi tukihenkilön kanssa.)",
+  pl: "Cześć! 👋 Jestem asystentem AI Kronekort-X. W czym mogę pomóc? (Napisz 'człowiek', aby porozmawiać z supportem.)",
+  uk: "Привіт! 👋 Я AI-асистент Kronekort-X. Чим можу допомогти? (Напишіть 'людина' щоб поговорити з підтримкою.)",
+  ru: "Привет! 👋 Я AI-ассистент Kronekort-X. Чем могу помочь? (Напишите 'человек' чтобы связаться с поддержкой.)",
 };
 
 export function SupportChat() {
