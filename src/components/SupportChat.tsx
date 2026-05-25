@@ -19,14 +19,22 @@ const INTRO_BY_LANG: Record<string, string> = {
 };
 
 export function SupportChat() {
+  const { lang } = useLang();
+  const langLabel = LANGS.find((l) => l.code === lang)?.label ?? "Norsk";
+  const intro: Msg = { role: "assistant", body: INTRO_BY_LANG[lang] ?? INTRO_BY_LANG.no };
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([INTRO]);
+  const [messages, setMessages] = useState<Msg[]>([intro]);
   const [input, setInput] = useState("");
   const [convId, setConvId] = useState<string | undefined>();
   const [sending, setSending] = useState(false);
   const [escalated, setEscalated] = useState(false);
   const send = useServerFn(sendSupportMessage);
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Reset intro when language changes (only if no real conversation yet)
+  useEffect(() => {
+    if (!convId) setMessages([{ role: "assistant", body: INTRO_BY_LANG[lang] ?? INTRO_BY_LANG.no }]);
+  }, [lang, convId]);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: 99999, behavior: "smooth" });
@@ -45,7 +53,7 @@ export function SupportChat() {
         anonId = crypto.randomUUID();
         localStorage.setItem("kkx_chat_aid", anonId);
       }
-      const res = await send({ data: { conversationId: convId, anonId, body: text } });
+      const res = await send({ data: { conversationId: convId, anonId, body: text, lang: langLabel } });
       setConvId(res.conversationId);
       setMessages((m) => [...m, { role: "assistant", body: res.reply }]);
       if (res.needsHuman) setEscalated(true);
