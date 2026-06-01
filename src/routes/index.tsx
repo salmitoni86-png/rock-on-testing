@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell, Globe, BookOpen } from "lucide-react";
+import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell, Globe, BookOpen, Lock, Receipt, BarChart3, PlusCircle } from "lucide-react";
 import { LivingBackground, HeroText } from "@/components/LivingBackground";
 import { DemoVideoSection } from "@/components/DemoVideoSection";
 import { ShareBar } from "@/components/ShareBar";
