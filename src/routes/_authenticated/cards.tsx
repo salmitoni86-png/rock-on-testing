@@ -59,15 +59,43 @@ function CardsPage() {
     e.preventDefault();
     const num = newNumber.replace(/\s+/g, "");
     if (!/^\d{8,19}$/.test(num)) return toast.error("Ugyldig kortnummer");
-    const { error } = await supabase.from("cards").insert({
+    if (newPin && !/^\d{4,8}$/.test(newPin)) return toast.error("PIN må være 4–8 sifre");
+    const { data: created, error } = await supabase.from("cards").insert({
       name: newName.trim() || "DNB Kronekort",
       card_number: num,
+      last4: num.slice(-4),
+      owner_name: newOwner.trim() || null,
       owner_id: user!.id,
-    });
+    }).select("id").single();
     if (error) return toast.error(error.message);
-    setNewNumber(""); setNewName(""); toast.success("Kort lagt til");
+    if (newPin && created) {
+      try { await setPinFn({ data: { cardId: created.id, pin: newPin } }); }
+      catch (err: any) { toast.error(err?.message ?? "Kunne ikke sette PIN"); }
+    }
+    setNewNumber(""); setNewName(""); setNewOwner(""); setNewPin("");
+    toast.success("Kort lagt til");
     refresh();
   }
+
+  async function changePin(cardId: string) {
+    const pin = (pinInput[cardId] ?? "").trim();
+    if (!/^\d{4,8}$/.test(pin)) return toast.error("PIN må være 4–8 sifre");
+    try {
+      await setPinFn({ data: { cardId, pin } });
+      setPinInput((s) => ({ ...s, [cardId]: "" }));
+      toast.success("PIN lagret");
+      refresh();
+    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+  }
+
+  async function removePin(cardId: string) {
+    try {
+      await clearPinFn({ data: { cardId } });
+      toast.success("PIN fjernet");
+      refresh();
+    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+  }
+
 
   async function removeCard(id: string) {
     if (!confirm("Slette kortet?")) return;
