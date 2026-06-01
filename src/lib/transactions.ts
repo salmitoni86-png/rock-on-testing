@@ -47,3 +47,48 @@ export function summarize(rows: Transaction[]) {
   }
   return { income, spend, net: income - spend, count: rows.length };
 }
+
+export type PeriodSummary = {
+  income: number;
+  spend: number;
+  net: number;
+  count: number;
+  topCategories: { category: string; total: number }[];
+};
+
+// Aggregates all transactions for a card within a period (for usage stats).
+export async function periodSummary(opts: {
+  cardId: string;
+  from: string;
+  to: string;
+}): Promise<PeriodSummary> {
+  const { cardId, from, to } = opts;
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("amount_nok,category")
+    .eq("card_id", cardId)
+    .gte("posted_at", from)
+    .lte("posted_at", to)
+    .order("posted_at", { ascending: false })
+    .limit(1000);
+  if (error) throw error;
+  const rows = (data as { amount_nok: number; category: string | null }[]) ?? [];
+  let income = 0,
+    spend = 0;
+  const cats = new Map<string, number>();
+  for (const r of rows) {
+    const a = Number(r.amount_nok);
+    if (a > 0) income += a;
+    else {
+      spend += -a;
+      const c = r.category ?? "Annet";
+      cats.set(c, (cats.get(c) ?? 0) + -a);
+    }
+  }
+  const topCategories = Array.from(cats.entries())
+    .map(([category, total]) => ({ category, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+  return { income, spend, net: income - spend, count: rows.length, topCategories };
+}
+
