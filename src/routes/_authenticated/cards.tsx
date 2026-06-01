@@ -24,14 +24,19 @@ type Req = { id: string; card_id: string; requested_by: string; status: string; 
 
 function CardsPage() {
   const { user } = useAuth();
+  const setPinFn = useServerFn(setCardPin);
+  const clearPinFn = useServerFn(clearCardPin);
   const [cards, setCards] = useState<Card[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [requests, setRequests] = useState<Req[]>([]);
   const [newNumber, setNewNumber] = useState("");
   const [newName, setNewName] = useState("");
+  const [newOwner, setNewOwner] = useState("");
+  const [newPin, setNewPin] = useState("");
   const [joinOwner, setJoinOwner] = useState("");
   const [joinLast4, setJoinLast4] = useState("");
   const [addUsername, setAddUsername] = useState<Record<string, string>>({});
+  const [pinInput, setPinInput] = useState<Record<string, string>>({});
 
   async function refresh() {
     const { data: cs } = await supabase.from("cards").select("*").order("created_at", { ascending: false });
