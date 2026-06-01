@@ -1,11 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Users, Check, X, UserPlus } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Plus, Trash2, Users, Check, X, UserPlus, Lock, LockOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { setCardPin, clearCardPin } from "@/lib/card-pin.functions";
 
 export const Route = createFileRoute("/_authenticated/cards")({
   head: () => ({ meta: [{ title: "Mine kort — Kronekort-X" }] }),
@@ -15,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/cards")({
 type Card = {
   id: string; name: string; card_number: string; last4: string | null;
   is_active: boolean; last_balance: number | null; owner_id: string;
+  owner_name: string | null; pin_hash: string | null;
 };
 type Member = { card_id: string; user_id: string; role: string; username?: string };
 type Req = { id: string; card_id: string; requested_by: string; status: string; username?: string };
