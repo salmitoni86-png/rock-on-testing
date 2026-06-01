@@ -253,3 +253,25 @@ function Feature({ icon, title, body }: { icon: React.ReactNode; title: string; 
     </div>
   );
 }
+
+function MiniStat({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-background/60 p-4">
+      <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">{icon}</div>
+      <p className="mt-3 text-sm font-semibold">{title}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+
+function Step({ n, icon, title, body }: { n: string; icon: React.ReactNode; title: string; body: string }) {
+  return (
+    <div className="relative rounded-3xl border border-border bg-card p-6">
+      <span className="absolute right-5 top-5 font-display text-4xl font-bold text-primary/10">{n}</span>
+      <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">{icon}</div>
+      <h3 className="mt-4 font-display text-lg font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+
