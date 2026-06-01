@@ -155,14 +155,20 @@ function CardsPage() {
       {/* Add */}
       <form onSubmit={addCard} className="space-y-2 rounded-2xl border border-border bg-card p-4">
         <p className="text-sm font-medium">Legg til DNB Kronekort</p>
-        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Navn (valgfritt)"
+        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Kortnavn (valgfritt)"
+          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
+        <input value={newOwner} onChange={(e) => setNewOwner(e.target.value)} placeholder="Navn på kortholder"
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
         <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} placeholder="Kortnummer" inputMode="numeric"
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
+        <input value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))} placeholder="App-PIN (valgfritt, 4–8 sifre)" inputMode="numeric" maxLength={8} type="password"
+          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
+        <p className="text-[11px] text-muted-foreground">PIN-koden låser visning av kortet i appen og lagres kun som en sikker hash — aldri som lesbare sifre.</p>
         <button className="w-full rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
           <Plus className="mr-1 inline h-4 w-4" /> Legg til kort
         </button>
       </form>
+
 
       {/* Join */}
       <form onSubmit={joinCard} className="mt-4 space-y-2 rounded-2xl border border-border bg-card p-4">
