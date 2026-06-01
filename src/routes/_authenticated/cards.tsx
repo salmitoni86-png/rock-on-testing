@@ -203,16 +203,63 @@ function CardsPage() {
                   )}
                 </div>
                 <p className="tabular mt-6 font-mono text-base tracking-[0.3em] text-white/80">•••• •••• •••• {c.last4}</p>
-                <p className="tabular mt-3 font-display text-2xl font-semibold">
-                  {c.last_balance != null ? `${c.last_balance} kr` : "—"}
-                </p>
+                <div className="mt-3 flex items-end justify-between">
+                  <div>
+                    {c.owner_name && (
+                      <p className="text-[10px] uppercase tracking-widest text-white/60">{c.owner_name}</p>
+                    )}
+                    <p className="tabular mt-1 font-display text-2xl font-semibold">
+                      {c.last_balance != null ? `${c.last_balance} kr` : "—"}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-white/80">
+                    {c.pin_hash ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
+                    {c.pin_hash ? "PIN-låst" : "Ulåst"}
+                  </span>
+                </div>
               </div>
+
+              <Link
+                to="/cards/$id"
+                params={{ id: c.id }}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                Se transaksjoner <ArrowRight className="h-3 w-3" />
+              </Link>
+
+              {ownerHere && (
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="flex items-center gap-2 text-sm font-medium">
+                    <Lock className="h-4 w-4" /> PIN-lås
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={8}
+                      value={pinInput[c.id] ?? ""}
+                      onChange={(e) => setPinInput((s) => ({ ...s, [c.id]: e.target.value.replace(/\D/g, "") }))}
+                      placeholder={c.pin_hash ? "Ny PIN (4–8 sifre)" : "Sett PIN (4–8 sifre)"}
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                    />
+                    <button onClick={() => changePin(c.id)} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90">
+                      Lagre
+                    </button>
+                    {c.pin_hash && (
+                      <button onClick={() => removePin(c.id)} className="rounded-lg border border-border bg-secondary px-3 py-2 text-sm hover:bg-accent">
+                        Fjern
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {ownerHere && (
                 <div className="rounded-2xl border border-border bg-card p-4">
                   <p className="flex items-center gap-2 text-sm font-medium">
                     <Users className="h-4 w-4" /> Medlemmer
                   </p>
+
                   <ul className="mt-2 space-y-1.5">
                     {cardMembers.map((m) => (
                       <li key={m.user_id} className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2 text-sm">
