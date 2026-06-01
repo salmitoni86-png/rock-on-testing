@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell, Globe, BookOpen } from "lucide-react";
+import { ArrowRight, CreditCard, RefreshCw, Sparkles, Users, ShieldCheck, Bell, Globe, BookOpen, Lock, Receipt, BarChart3, PlusCircle } from "lucide-react";
 import { LivingBackground, HeroText } from "@/components/LivingBackground";
 import { DemoVideoSection } from "@/components/DemoVideoSection";
 import { ShareBar } from "@/components/ShareBar";
@@ -116,7 +116,44 @@ function SplashPage() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* About the project */}
+      <section className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+        <div className="rounded-3xl border border-border bg-gradient-to-br from-card to-accent/30 p-8 sm:p-12">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+            <Sparkles className="h-3 w-3" /> Hva er Kronekort-X?
+          </span>
+          <h2 className="mt-5 max-w-3xl font-display text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
+            En enkel, vakker oversikt over DNB Kronekort — saldo, transaksjoner og forbruk samlet på ett sted.
+          </h2>
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">
+            Kronekort-X er laget for familier og enkeltpersoner som vil følge med på Kronekortet uten å logge
+            inn i nettbanken hele tiden. Du legger til kortet ditt, ser saldoen oppdatert gjennom dagen,
+            blar i alle transaksjoner med søk og perioder, og deler oversikten trygt med dem du stoler på.
+            Hvert kort kan låses med en egen PIN-kode, og all data ligger trygt lagret i skyen.
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <MiniStat icon={<Receipt className="h-4 w-4" />} title="Alle transaksjoner" body="Søk, filtrer på dato og bla med paginering." />
+            <MiniStat icon={<BarChart3 className="h-4 w-4" />} title="Forbruk over tid" body="Måned, 3 mnd, halvår og år — med kategorier." />
+            <MiniStat icon={<Lock className="h-4 w-4" />} title="PIN-låst" body="Lås hvert kort med en kode lagret som sikker hash." />
+            <MiniStat icon={<Users className="h-4 w-4" />} title="Delt i familien" body="Inviter andre med godkjenning fra eier." />
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">Slik fungerer det</h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">Tre steg fra konto til full oversikt.</p>
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          <Step n="1" icon={<PlusCircle className="h-5 w-5" />} title="Legg til kortet"
+            body="Registrer DNB Kronekortet med navn, kortnummer og en valgfri PIN-kode for å låse visningen." />
+          <Step n="2" icon={<RefreshCw className="h-5 w-5" />} title="Hold saldoen oppdatert"
+            body="Saldoen oppdateres automatisk gjennom dagen, og du varsles når lønn eller NAV lander." />
+          <Step n="3" icon={<BarChart3 className="h-5 w-5" />} title="Følg forbruket"
+            body="Se transaksjoner, forbruk per periode og kategorier — og del oversikten med familien." />
+        </div>
+      </section>
+
       <section className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           Tre ting som gjør hverdagen enklere
@@ -216,3 +253,25 @@ function Feature({ icon, title, body }: { icon: React.ReactNode; title: string; 
     </div>
   );
 }
+
+function MiniStat({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-background/60 p-4">
+      <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">{icon}</div>
+      <p className="mt-3 text-sm font-semibold">{title}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+
+function Step({ n, icon, title, body }: { n: string; icon: React.ReactNode; title: string; body: string }) {
+  return (
+    <div className="relative rounded-3xl border border-border bg-card p-6">
+      <span className="absolute right-5 top-5 font-display text-4xl font-bold text-primary/10">{n}</span>
+      <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">{icon}</div>
+      <h3 className="mt-4 font-display text-lg font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+

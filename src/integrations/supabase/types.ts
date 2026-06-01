@@ -221,6 +221,8 @@ export type Database = {
           last4: string | null
           name: string
           owner_id: string
+          owner_name: string | null
+          pin_hash: string | null
         }
         Insert: {
           card_number: string
@@ -232,6 +234,8 @@ export type Database = {
           last4?: string | null
           name?: string
           owner_id: string
+          owner_name?: string | null
+          pin_hash?: string | null
         }
         Update: {
           card_number?: string
@@ -243,6 +247,8 @@ export type Database = {
           last4?: string | null
           name?: string
           owner_id?: string
+          owner_name?: string | null
+          pin_hash?: string | null
         }
         Relationships: []
       }
