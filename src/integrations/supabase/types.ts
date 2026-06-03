@@ -252,6 +252,102 @@ export type Database = {
         }
         Relationships: []
       }
+      earning_tip_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          tip_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          tip_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          tip_id?: string
+        }
+        Relationships: []
+      }
+      earning_tip_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          stars: number
+          tip_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          stars: number
+          tip_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          stars?: number
+          tip_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      earning_tips: {
+        Row: {
+          author_id: string | null
+          click_count: number
+          created_at: string
+          description: string
+          featured: boolean
+          hashtag: string | null
+          id: string
+          kr_amount: number
+          min_withdraw: number
+          status: string
+          title: string
+          url: string
+          withdraw_multiplier: number
+        }
+        Insert: {
+          author_id?: string | null
+          click_count?: number
+          created_at?: string
+          description?: string
+          featured?: boolean
+          hashtag?: string | null
+          id?: string
+          kr_amount?: number
+          min_withdraw?: number
+          status?: string
+          title: string
+          url: string
+          withdraw_multiplier?: number
+        }
+        Update: {
+          author_id?: string | null
+          click_count?: number
+          created_at?: string
+          description?: string
+          featured?: boolean
+          hashtag?: string | null
+          id?: string
+          kr_amount?: number
+          min_withdraw?: number
+          status?: string
+          title?: string
+          url?: string
+          withdraw_multiplier?: number
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           addressee_id: string
@@ -317,6 +413,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ban_reason: string | null
+          banned: boolean
+          banned_at: string | null
           contact_email: string | null
           created_at: string
           discord: string | null
@@ -327,9 +426,13 @@ export type Database = {
           snapchat: string | null
           telegram: string | null
           username: string
+          warning_count: number
           whatsapp: string | null
         }
         Insert: {
+          ban_reason?: string | null
+          banned?: boolean
+          banned_at?: string | null
           contact_email?: string | null
           created_at?: string
           discord?: string | null
@@ -340,9 +443,13 @@ export type Database = {
           snapchat?: string | null
           telegram?: string | null
           username: string
+          warning_count?: number
           whatsapp?: string | null
         }
         Update: {
+          ban_reason?: string | null
+          banned?: boolean
+          banned_at?: string | null
           contact_email?: string | null
           created_at?: string
           discord?: string | null
@@ -353,6 +460,7 @@ export type Database = {
           snapchat?: string | null
           telegram?: string | null
           username?: string
+          warning_count?: number
           whatsapp?: string | null
         }
         Relationships: []
@@ -538,6 +646,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_warnings: {
+        Row: {
+          context: string | null
+          created_at: string
+          id: string
+          reason: string
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string
+          id?: string
+          reason: string
+          severity?: string
+          user_id: string
+        }
+        Update: {
+          context?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          severity?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -547,6 +682,8 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"]; _uid: string }
         Returns: boolean
       }
+      increment_tip_click: { Args: { _tip_id: string }; Returns: undefined }
+      is_banned: { Args: { _uid: string }; Returns: boolean }
       is_card_member: {
         Args: { _card_id: string; _user_id: string }
         Returns: boolean
