@@ -8,8 +8,8 @@ export function BottomNav() {
   const items = [
     { to: "/app", label: t("navHome"), Icon: Home },
     { to: "/cards", label: t("navCards"), Icon: CreditCard },
-    { to: "/friends", label: "Venner", Icon: Users },
-    { to: "/invites", label: "Inviter", Icon: Gift },
+    { to: "/friends", label: t("navFriends"), Icon: Users },
+    { to: "/invites", label: t("navInvites"), Icon: Gift },
     { to: "/settings", label: t("navSettings"), Icon: Settings },
   ] as const;
   return (
