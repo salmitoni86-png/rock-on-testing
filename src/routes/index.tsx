@@ -4,6 +4,7 @@ import { LivingBackground, HeroText } from "@/components/LivingBackground";
 import { DemoVideoSection } from "@/components/DemoVideoSection";
 import { ShareBar } from "@/components/ShareBar";
 import { LiveWorldMap } from "@/components/LiveWorldMap";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/")({
 });
 
 function SplashPage() {
+  const { t } = useLang();
   return (
     <div className="relative min-h-screen bg-background">
       <LivingBackground />
@@ -37,15 +39,15 @@ function SplashPage() {
           <span className="font-display text-lg font-semibold tracking-tight">Kronekort-X</span>
         </div>
         <nav className="flex items-center gap-1 sm:gap-3 text-sm">
-          <Link to="/blog" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Blogg</Link>
-          <Link to="/analytics" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Live</Link>
-          <Link to="/about" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Om</Link>
-          <Link to="/login" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">Logg inn</Link>
+          <Link to="/blog" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">{t("navBlog")}</Link>
+          <Link to="/analytics" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">{t("navLive")}</Link>
+          <Link to="/about" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">{t("navAbout")}</Link>
+          <Link to="/login" className="rounded-lg px-3 py-2 text-muted-foreground hover:text-foreground">{t("navLogin")}</Link>
           <Link
             to="/signup"
             className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:opacity-90"
           >
-            Opprett konto
+            {t("navSignup")}
           </Link>
         </nav>
       </header>
@@ -56,59 +58,57 @@ function SplashPage() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
               <Sparkles className="h-3 w-3" />
-              For DNB Kronekort-brukere
+              {t("lpForUsers")}
             </span>
             <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-              <HeroText text="Vet hvor kronene dine er" />
+              <HeroText text={t("lpHero1")} />
               <span className="block bg-gradient-to-r from-primary via-[color:var(--bcard-c)] to-[color:var(--salary)] bg-clip-text text-transparent">
-                <HeroText text="— før banken gjør det." />
+                <HeroText text={t("lpHero2")} />
               </span>
             </h1>
             <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-              Kronekort-X henter saldoen din automatisk gjennom dagen, varsler deg når lønn
-              eller NAV lander, og lar deg dele kortet trygt med familien — uten å gi fra
-              deg passord.
+              {t("lpHeroDesc")}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/signup"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-90"
               >
-                Kom i gang gratis <ArrowRight className="h-4 w-4" />
+                {t("lpCtaStart")} <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/login"
                 className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium hover:bg-accent"
               >
-                Jeg har allerede konto
+                {t("lpHaveAccount")}
               </Link>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">
-              Ingen kortpassord. Ingen BankID-styr. Bare oversikt.
+              {t("lpFinePrint")}
             </p>
           </div>
 
           {/* Preview card */}
           <div className="relative">
             <div className="balance-card mx-auto max-w-sm rounded-3xl p-7">
-              <p className="text-xs uppercase tracking-widest text-white/70">Månedlig saldo</p>
+              <p className="text-xs uppercase tracking-widest text-white/70">{t("lpMonthly")}</p>
               <p className="tabular mt-2 font-display text-5xl font-semibold">+42 180 kr</p>
-              <p className="mt-1 text-xs text-white/60">DNB Kronekort · •••• 4821</p>
+              <p className="mt-1 text-xs text-white/60">DNB Kronekort · •••• 5081</p>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-white/10 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-[color:var(--income)]">Inn i dag</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[color:var(--income)]">{t("inToday")}</p>
                   <p className="tabular mt-1 text-sm font-semibold text-white">+12 450 kr</p>
                 </div>
                 <div className="rounded-2xl bg-white/10 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-[color:var(--spend)]">Ut i dag</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[color:var(--spend)]">{t("outToday")}</p>
                   <p className="tabular mt-1 text-sm font-semibold text-white">−412 kr</p>
                 </div>
               </div>
 
               <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-[11px] text-white/80">
                 <Sparkles className="h-3.5 w-3.5" />
-                NAV utbetaling oppdaget kl. 08:00
+                {t("lpNavDetected")}
               </div>
             </div>
             <div className="pointer-events-none absolute -inset-x-10 -bottom-10 -top-10 -z-10 rounded-[3rem] bg-gradient-to-tr from-primary/10 via-transparent to-[color:var(--bcard-c)]/20 blur-3xl" />
@@ -120,64 +120,46 @@ function SplashPage() {
       <section className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
         <div className="rounded-3xl border border-border bg-gradient-to-br from-card to-accent/30 p-8 sm:p-12">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
-            <Sparkles className="h-3 w-3" /> Hva er Kronekort-X?
+            <Sparkles className="h-3 w-3" /> {t("lpWhatBadge")}
           </span>
           <h2 className="mt-5 max-w-3xl font-display text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
-            En enkel, vakker oversikt over DNB Kronekort — saldo, transaksjoner og forbruk samlet på ett sted.
+            {t("lpWhatTitle")}
           </h2>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">
-            Kronekort-X er laget for familier og enkeltpersoner som vil følge med på Kronekortet uten å logge
-            inn i nettbanken hele tiden. Du legger til kortet ditt, ser saldoen oppdatert gjennom dagen,
-            blar i alle transaksjoner med søk og perioder, og deler oversikten trygt med dem du stoler på.
-            Hvert kort kan låses med en egen PIN-kode, og all data ligger trygt lagret i skyen.
+            {t("lpWhatBody")}
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MiniStat icon={<Receipt className="h-4 w-4" />} title="Alle transaksjoner" body="Søk, filtrer på dato og bla med paginering." />
-            <MiniStat icon={<BarChart3 className="h-4 w-4" />} title="Forbruk over tid" body="Måned, 3 mnd, halvår og år — med kategorier." />
-            <MiniStat icon={<Lock className="h-4 w-4" />} title="PIN-låst" body="Lås hvert kort med en kode lagret som sikker hash." />
-            <MiniStat icon={<Users className="h-4 w-4" />} title="Delt i familien" body="Inviter andre med godkjenning fra eier." />
+            <MiniStat icon={<Receipt className="h-4 w-4" />} title={t("lpMs1T")} body={t("lpMs1B")} />
+            <MiniStat icon={<BarChart3 className="h-4 w-4" />} title={t("lpMs2T")} body={t("lpMs2B")} />
+            <MiniStat icon={<Lock className="h-4 w-4" />} title={t("lpMs3T")} body={t("lpMs3B")} />
+            <MiniStat icon={<Users className="h-4 w-4" />} title={t("lpMs4T")} body={t("lpMs4B")} />
           </div>
         </div>
       </section>
 
       {/* How it works */}
       <section className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">Slik fungerer det</h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">Tre steg fra konto til full oversikt.</p>
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t("lpHowTitle")}</h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">{t("lpHowSub")}</p>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
-          <Step n="1" icon={<PlusCircle className="h-5 w-5" />} title="Legg til kortet"
-            body="Registrer DNB Kronekortet med navn, kortnummer og en valgfri PIN-kode for å låse visningen." />
-          <Step n="2" icon={<RefreshCw className="h-5 w-5" />} title="Hold saldoen oppdatert"
-            body="Saldoen oppdateres automatisk gjennom dagen, og du varsles når lønn eller NAV lander." />
-          <Step n="3" icon={<BarChart3 className="h-5 w-5" />} title="Følg forbruket"
-            body="Se transaksjoner, forbruk per periode og kategorier — og del oversikten med familien." />
+          <Step n="1" icon={<PlusCircle className="h-5 w-5" />} title={t("lpStep1T")} body={t("lpStep1B")} />
+          <Step n="2" icon={<RefreshCw className="h-5 w-5" />} title={t("lpStep2T")} body={t("lpStep2B")} />
+          <Step n="3" icon={<BarChart3 className="h-5 w-5" />} title={t("lpStep3T")} body={t("lpStep3B")} />
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          Tre ting som gjør hverdagen enklere
+          {t("lpThreeTitle")}
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
-          Bygd for folk som vil ha kontroll uten å åpne nettbanken hver halvtime.
+          {t("lpThreeSub")}
         </p>
 
         <div className="mt-12 grid gap-5 md:grid-cols-3">
-          <Feature
-            icon={<RefreshCw className="h-5 w-5" />}
-            title="Automatisk saldo, 6× om dagen"
-            body="Kortet oppdateres kl. 08, 10, 12, 14, 16 og 20 — uten at du løfter en finger. Inaktive kort sjekkes én gang i døgnet."
-          />
-          <Feature
-            icon={<Users className="h-5 w-5" />}
-            title="Del kortet trygt med familien"
-            body="Inviter samboer, barn eller foreldre med brukernavn. Du godkjenner hver tilgang — og kan fjerne den når du vil."
-          />
-          <Feature
-            icon={<Bell className="h-5 w-5" />}
-            title="Lønn, NAV og store kjøp"
-            body="Få push, e-post, SMS eller WhatsApp idet lønna lander eller saldoen synker under terskelen din."
-          />
+          <Feature icon={<RefreshCw className="h-5 w-5" />} title={t("lpF1T")} body={t("lpF1B")} />
+          <Feature icon={<Users className="h-5 w-5" />} title={t("lpF2T")} body={t("lpF2B")} />
+          <Feature icon={<Bell className="h-5 w-5" />} title={t("lpF3T")} body={t("lpF3B")} />
         </div>
       </section>
 
@@ -185,23 +167,22 @@ function SplashPage() {
       <section className="mx-auto max-w-4xl px-6 pb-20 text-center">
         <div className="rounded-3xl border border-border bg-card p-8">
           <ShieldCheck className="mx-auto h-8 w-8 text-[color:var(--income)]" />
-          <h3 className="mt-4 font-display text-xl font-semibold">Trygghet først</h3>
+          <h3 className="mt-4 font-display text-xl font-semibold">{t("lpTrustTitle")}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Vi lagrer aldri BankID eller kortpassord. All deling går gjennom godkjenning fra
-            kortets eier, og data ligger trygt i Lovable Cloud.
+            {t("lpTrustBody")}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               to="/signup"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              Opprett konto
+              {t("lpCreateAccount")}
             </Link>
             <Link
               to="/about"
               className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-5 py-3 text-sm font-medium hover:bg-accent"
             >
-              Les mer om prosjektet
+              {t("lpReadMore")}
             </Link>
           </div>
         </div>
@@ -215,11 +196,11 @@ function SplashPage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-              <Globe className="h-3 w-3" /> Live
+              <Globe className="h-3 w-3" /> {t("navLive")}
             </span>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Aktive akkurat nå</h2>
+            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t("lpLiveTitle")}</h2>
           </div>
-          <Link to="/analytics" className="hidden text-sm text-primary hover:underline sm:inline">Åpne full visning →</Link>
+          <Link to="/analytics" className="hidden text-sm text-primary hover:underline sm:inline">{t("lpLiveOpen")}</Link>
         </div>
         <div className="mt-6"><LiveWorldMap /></div>
       </section>
@@ -228,16 +209,16 @@ function SplashPage() {
       <section className="mx-auto max-w-3xl px-6 py-8">
         <div className="flex items-center gap-2 pb-3">
           <BookOpen className="h-4 w-4 text-muted-foreground" />
-          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground">Les bloggen →</Link>
+          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground">{t("lpReadBlog")}</Link>
         </div>
         <ShareBar />
       </section>
 
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        Kronekort-X · Bygget med ❤ i Norge ·{" "}
+        Kronekort-X · {t("lpFooterBuilt")} ·{" "}
         <Link to="/about" className="underline hover:text-foreground">
-          Støtt utviklerne
+          {t("lpFooterSupport")}
         </Link>
       </footer>
     </div>
@@ -274,4 +255,3 @@ function Step({ n, icon, title, body }: { n: string; icon: React.ReactNode; titl
     </div>
   );
 }
-
