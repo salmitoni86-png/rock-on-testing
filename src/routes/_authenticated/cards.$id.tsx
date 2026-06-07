@@ -85,13 +85,13 @@ function CardDetail() {
 
   async function tryUnlock(e: React.FormEvent) {
     e.preventDefault();
-    if (!/^\d{4,8}$/.test(pin)) return toast.error("PIN må være 4–8 sifre");
+    if (!/^\d{4,8}$/.test(pin)) return toast.error(t("tPinDigits"));
     setChecking(true);
     try {
       const res = await verifyPinFn({ data: { cardId: id, pin } });
       if (res.ok) { setUnlocked(true); setPin(""); }
-      else toast.error("Feil PIN");
-    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+      else toast.error(t("wrongPin"));
+    } catch (err: any) { toast.error(err?.message ?? t("tFailed")); }
     finally { setChecking(false); }
   }
 
