@@ -156,21 +156,21 @@ function CardDetail() {
 
       {/* Usage summary */}
       <section className="mt-3 rounded-2xl border border-border bg-card p-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Forbruk i perioden</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("spendInPeriod")}</p>
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl bg-[color:var(--income)]/10 p-3">
             <ArrowDownLeft className="mx-auto h-4 w-4 text-[color:var(--income)]" />
             <p className="tabular mt-1 text-sm font-semibold text-[color:var(--income)]">{fmt.money(summary?.income ?? 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Inn</p>
+            <p className="text-[10px] text-muted-foreground">{t("inWord")}</p>
           </div>
           <div className="rounded-xl bg-[color:var(--spend)]/10 p-3">
             <ArrowUpRight className="mx-auto h-4 w-4 text-[color:var(--spend)]" />
             <p className="tabular mt-1 text-sm font-semibold">{fmt.money(summary?.spend ?? 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Ut</p>
+            <p className="text-[10px] text-muted-foreground">{t("outWord")}</p>
           </div>
           <div className="rounded-xl bg-secondary/60 p-3">
             <p className="tabular mt-1 text-sm font-semibold">{fmt.money(summary?.net ?? 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Netto · {summary?.count ?? 0} tx</p>
+            <p className="text-[10px] text-muted-foreground">{t("netWord")} · {summary?.count ?? 0} tx</p>
           </div>
         </div>
         {summary && summary.topCategories.length > 0 && (
