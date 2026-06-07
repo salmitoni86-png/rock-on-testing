@@ -268,7 +268,7 @@ function CardsPage() {
                         <span>@{m.username ?? "—"} <span className="text-xs text-muted-foreground">({m.role})</span></span>
                         {m.role !== "owner" && (
                           <button onClick={() => removeMember(c.id, m.user_id)} className="text-xs text-destructive hover:underline">
-                            Fjern
+                            {t("removeWord")}
                           </button>
                         )}
                       </li>
@@ -279,7 +279,7 @@ function CardsPage() {
                     <input
                       value={addUsername[c.id] ?? ""}
                       onChange={(e) => setAddUsername((s) => ({ ...s, [c.id]: e.target.value }))}
-                      placeholder="Legg til brukernavn"
+                      placeholder={t("addUsernamePh")}
                       className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                     />
                     <button onClick={() => addMember(c.id)} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90">
@@ -289,7 +289,7 @@ function CardsPage() {
 
                   {cardReqs.length > 0 && (
                     <div className="mt-4">
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Forespørsler</p>
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("requestsWord")}</p>
                       <ul className="mt-2 space-y-1.5">
                         {cardReqs.map((r) => (
                           <li key={r.id} className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2 text-sm">
