@@ -232,7 +232,7 @@ function CardsPage() {
               {ownerHere && (
                 <div className="rounded-2xl border border-border bg-card p-4">
                   <p className="flex items-center gap-2 text-sm font-medium">
-                    <Lock className="h-4 w-4" /> PIN-lås
+                    <Lock className="h-4 w-4" /> {t("pinLock")}
                   </p>
                   <div className="mt-2 flex gap-2">
                     <input
@@ -241,15 +241,15 @@ function CardsPage() {
                       maxLength={8}
                       value={pinInput[c.id] ?? ""}
                       onChange={(e) => setPinInput((s) => ({ ...s, [c.id]: e.target.value.replace(/\D/g, "") }))}
-                      placeholder={c.pin_hash ? "Ny PIN (4–8 sifre)" : "Sett PIN (4–8 sifre)"}
+                      placeholder={c.pin_hash ? t("pinNewPh") : t("pinSetPh")}
                       className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                     />
                     <button onClick={() => changePin(c.id)} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90">
-                      Lagre
+                      {t("saveWord")}
                     </button>
                     {c.pin_hash && (
                       <button onClick={() => removePin(c.id)} className="rounded-lg border border-border bg-secondary px-3 py-2 text-sm hover:bg-accent">
-                        Fjern
+                        {t("removeWord")}
                       </button>
                     )}
                   </div>
@@ -259,7 +259,7 @@ function CardsPage() {
               {ownerHere && (
                 <div className="rounded-2xl border border-border bg-card p-4">
                   <p className="flex items-center gap-2 text-sm font-medium">
-                    <Users className="h-4 w-4" /> Medlemmer
+                    <Users className="h-4 w-4" /> {t("membersWord")}
                   </p>
 
                   <ul className="mt-2 space-y-1.5">
