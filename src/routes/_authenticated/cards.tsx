@@ -151,37 +151,37 @@ function CardsPage() {
   }
 
   return (
-    <AppShell title="Mine kort" subtitle={`${cards.length} aktiv${cards.length === 1 ? "t" : "e"} kort`}>
+    <AppShell title={t("cardsTitle")} subtitle={t("cardsActiveCount", { n: cards.length })}>
       <Toaster position="top-center" />
 
       {/* Add */}
       <form onSubmit={addCard} className="space-y-2 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Legg til DNB Kronekort</p>
-        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Kortnavn (valgfritt)"
+        <p className="text-sm font-medium">{t("addCardTitle")}</p>
+        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t("cardNamePh")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={newOwner} onChange={(e) => setNewOwner(e.target.value)} placeholder="Navn på kortholder"
+        <input value={newOwner} onChange={(e) => setNewOwner(e.target.value)} placeholder={t("cardHolderPh")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} placeholder="Kortnummer" inputMode="numeric"
+        <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} placeholder={t("cardNumberPh")} inputMode="numeric"
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))} placeholder="App-PIN (valgfritt, 4–8 sifre)" inputMode="numeric" maxLength={8} type="password"
+        <input value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))} placeholder={t("cardPinPh")} inputMode="numeric" maxLength={8} type="password"
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <p className="text-[11px] text-muted-foreground">PIN-koden låser visning av kortet i appen og lagres kun som en sikker hash — aldri som lesbare sifre.</p>
+        <p className="text-[11px] text-muted-foreground">{t("cardPinNote")}</p>
         <button className="w-full rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
-          <Plus className="mr-1 inline h-4 w-4" /> Legg til kort
+          <Plus className="mr-1 inline h-4 w-4" /> {t("addCardBtn")}
         </button>
       </form>
 
 
       {/* Join */}
       <form onSubmit={joinCard} className="mt-4 space-y-2 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Bli med på et kort</p>
-        <p className="text-xs text-muted-foreground">Brukernavnet til eier + siste 4 sifre på kortet.</p>
-        <input value={joinOwner} onChange={(e) => setJoinOwner(e.target.value)} placeholder="Brukernavn til eier"
+        <p className="text-sm font-medium">{t("joinTitle")}</p>
+        <p className="text-xs text-muted-foreground">{t("joinHint")}</p>
+        <input value={joinOwner} onChange={(e) => setJoinOwner(e.target.value)} placeholder={t("joinOwnerPh")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={joinLast4} onChange={(e) => setJoinLast4(e.target.value)} placeholder="Siste 4 sifre" maxLength={4}
+        <input value={joinLast4} onChange={(e) => setJoinLast4(e.target.value)} placeholder={t("joinLast4Ph")} maxLength={4}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
         <button className="w-full rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium hover:bg-accent">
-          Send forespørsel
+          {t("joinSend")}
         </button>
       </form>
 
