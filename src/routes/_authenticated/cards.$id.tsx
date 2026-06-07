@@ -236,12 +236,12 @@ function CardDetail() {
                 {tx.merchant}
                 {tx.is_salary && (
                   <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-[color:var(--salary)]/15 px-1.5 py-0.5 text-[9px] font-medium text-[color:var(--salary)] align-middle">
-                    <Sparkles className="h-2.5 w-2.5" /> Lønn
+                    <Sparkles className="h-2.5 w-2.5" /> {t("salaryShort")}
                   </span>
                 )}
               </p>
               <p className="truncate text-xs text-muted-foreground">
-                {tx.category ?? "Annet"} · {fmt.date(tx.posted_at)}
+                {tx.category ?? t("otherWord")} · {fmt.date(tx.posted_at)}
               </p>
             </div>
             <p className={`tabular shrink-0 text-sm font-semibold ${tx.amount_nok > 0 ? "text-[color:var(--income)]" : ""}`}>
@@ -251,7 +251,7 @@ function CardDetail() {
         ))}
         {rows.length === 0 && (
           <li className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Ingen transaksjoner i valgt periode.
+            {t("noTxPeriod")}
           </li>
         )}
       </ul>
@@ -259,12 +259,12 @@ function CardDetail() {
       <nav className="mt-4 flex items-center justify-between text-sm">
         <button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}
           className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 disabled:opacity-40">
-          <ChevronLeft className="h-4 w-4" /> Forrige
+          <ChevronLeft className="h-4 w-4" /> {t("prevWord")}
         </button>
-        <span className="text-xs text-muted-foreground">Side {page + 1} / {totalPages}</span>
+        <span className="text-xs text-muted-foreground">{t("sideWord", { n: page + 1, total: totalPages })}</span>
         <button disabled={page + 1 >= totalPages} onClick={() => setPage((p) => p + 1)}
           className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 disabled:opacity-40">
-          Neste <ChevronRight className="h-4 w-4" />
+          {t("nextWord")} <ChevronRight className="h-4 w-4" />
         </button>
       </nav>
     </AppShell>
