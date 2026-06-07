@@ -314,7 +314,7 @@ function CardsPage() {
         })}
         {cards.length === 0 && (
           <li className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Ingen kort enda. Legg til et over.
+            {t("noCards")}
           </li>
         )}
       </ul>
