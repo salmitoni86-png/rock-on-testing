@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ShareBar } from "@/components/ShareBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { useLang } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/invites")({
