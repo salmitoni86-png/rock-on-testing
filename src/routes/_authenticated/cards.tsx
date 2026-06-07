@@ -216,7 +216,7 @@ function CardsPage() {
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-white/80">
                     {c.pin_hash ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
-                    {c.pin_hash ? "PIN-låst" : "Ulåst"}
+                    {c.pin_hash ? t("pinLockedBadge") : t("unlockedBadge")}
                   </span>
                 </div>
               </div>
