@@ -31,7 +31,7 @@ function monthsAgo(n: number) { const d = new Date(); d.setMonth(d.getMonth() - 
 
 function CardDetail() {
   const { id } = Route.useParams();
-  const { fmt } = useLang();
+  const { t, fmt } = useLang();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const verifyPinFn = useServerFn(verifyCardPin);
