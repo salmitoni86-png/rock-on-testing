@@ -60,8 +60,8 @@ function CardsPage() {
   async function addCard(e: React.FormEvent) {
     e.preventDefault();
     const num = newNumber.replace(/\s+/g, "");
-    if (!/^\d{8,19}$/.test(num)) return toast.error("Ugyldig kortnummer");
-    if (newPin && !/^\d{4,8}$/.test(newPin)) return toast.error("PIN må være 4–8 sifre");
+    if (!/^\d{8,19}$/.test(num)) return toast.error(t("tInvalidCardNumber"));
+    if (newPin && !/^\d{4,8}$/.test(newPin)) return toast.error(t("tPinDigits"));
     const { data: created, error } = await supabase.from("cards").insert({
       name: newName.trim() || "DNB Kronekort",
       card_number: num,
@@ -72,35 +72,35 @@ function CardsPage() {
     if (error) return toast.error(error.message);
     if (newPin && created) {
       try { await setPinFn({ data: { cardId: created.id, pin: newPin } }); }
-      catch (err: any) { toast.error(err?.message ?? "Kunne ikke sette PIN"); }
+      catch (err: any) { toast.error(err?.message ?? t("tCouldNotSetPin")); }
     }
     setNewNumber(""); setNewName(""); setNewOwner(""); setNewPin("");
-    toast.success("Kort lagt til");
+    toast.success(t("tCardAdded"));
     refresh();
   }
 
   async function changePin(cardId: string) {
     const pin = (pinInput[cardId] ?? "").trim();
-    if (!/^\d{4,8}$/.test(pin)) return toast.error("PIN må være 4–8 sifre");
+    if (!/^\d{4,8}$/.test(pin)) return toast.error(t("tPinDigits"));
     try {
       await setPinFn({ data: { cardId, pin } });
       setPinInput((s) => ({ ...s, [cardId]: "" }));
-      toast.success("PIN lagret");
+      toast.success(t("tPinSaved"));
       refresh();
-    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+    } catch (err: any) { toast.error(err?.message ?? t("tFailed")); }
   }
 
   async function removePin(cardId: string) {
     try {
       await clearPinFn({ data: { cardId } });
-      toast.success("PIN fjernet");
+      toast.success(t("tPinRemoved"));
       refresh();
-    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+    } catch (err: any) { toast.error(err?.message ?? t("tFailed")); }
   }
 
 
   async function removeCard(id: string) {
-    if (!confirm("Slette kortet?")) return;
+    if (!confirm(t("tConfirmDeleteCard"))) return;
     const { error } = await supabase.from("cards").delete().eq("id", id);
     if (error) toast.error(error.message); else refresh();
   }
@@ -108,12 +108,12 @@ function CardsPage() {
   async function joinCard(e: React.FormEvent) {
     e.preventDefault();
     const { data: prof } = await supabase.from("profiles").select("id").eq("username", joinOwner.trim().toLowerCase()).maybeSingle();
-    if (!prof) return toast.error("Fant ikke bruker");
+    if (!prof) return toast.error(t("tUserNotFound"));
     const { data: card } = await supabase.from("cards").select("id").eq("owner_id", prof.id).eq("last4", joinLast4.trim()).maybeSingle();
-    if (!card) return toast.error("Fant ikke kort");
+    if (!card) return toast.error(t("tCardNotFound"));
     const { error } = await supabase.from("card_share_requests").insert({ card_id: card.id, requested_by: user!.id });
     if (error) return toast.error(error.message);
-    toast.success("Forespørsel sendt — venter på godkjenning");
+    toast.success(t("tReqPending"));
     setJoinOwner(""); setJoinLast4("");
   }
 
@@ -127,7 +127,7 @@ function CardsPage() {
     await supabase.from("card_share_requests").update({
       status: accept ? "accepted" : "declined", resolved_at: new Date().toISOString(),
     }).eq("id", req.id);
-    toast.success(accept ? "Godkjent" : "Avslått");
+    toast.success(accept ? t("tApproved") : t("tDeclined"));
     refresh();
   }
 
@@ -135,12 +135,12 @@ function CardsPage() {
     const uname = (addUsername[cardId] ?? "").trim().toLowerCase();
     if (!uname) return;
     const { data: prof } = await supabase.from("profiles").select("id").eq("username", uname).maybeSingle();
-    if (!prof) return toast.error("Fant ikke bruker");
+    if (!prof) return toast.error(t("tUserNotFound"));
     const { error } = await supabase.from("card_members").insert({
       card_id: cardId, user_id: prof.id, role: "viewer",
     });
     if (error) return toast.error(error.message);
-    toast.success("Lagt til");
+    toast.success(t("tAdded"));
     setAddUsername((s) => ({ ...s, [cardId]: "" }));
     refresh();
   }
