@@ -25,6 +25,7 @@ type Req = { id: string; card_id: string; requested_by: string; status: string; 
 
 function CardsPage() {
   const { user } = useAuth();
+  const { t } = useLang();
   const setPinFn = useServerFn(setCardPin);
   const clearPinFn = useServerFn(clearCardPin);
   const [cards, setCards] = useState<Card[]>([]);
