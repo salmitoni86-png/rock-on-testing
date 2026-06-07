@@ -50,7 +50,7 @@ function InvitesPage() {
       note: note.trim() || null,
       manual,
     });
-    if (error) toast.error(error.message); else { toast.success("Invitasjon opprettet"); setEmail(""); setNote(""); setManual(false); load(); }
+    if (error) toast.error(error.message); else { toast.success(t("inviteCreated")); setEmail(""); setNote(""); setManual(false); load(); }
   }
 
   function inviteUrl(code: string) {
