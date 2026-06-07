@@ -226,7 +226,7 @@ function CardsPage() {
                 params={{ id: c.id }}
                 className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                Se transaksjoner <ArrowRight className="h-3 w-3" />
+                {t("seeTx")} <ArrowRight className="h-3 w-3" />
               </Link>
 
               {ownerHere && (
