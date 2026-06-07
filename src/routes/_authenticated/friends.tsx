@@ -17,6 +17,7 @@ type Friendship = { id: string; requester_id: string; addressee_id: string; stat
 
 function FriendsPage() {
   const { user } = useAuth();
+  const { t } = useLang();
   const [friendships, setFriendships] = useState<Friendship[]>([]);
   const [profiles, setProfiles] = useState<Record<string, { username: string; display_name: string | null }>>({});
   const [search, setSearch] = useState("");
