@@ -99,13 +99,13 @@ function CardDetail() {
 
   if (card && card.pin_hash && !unlocked) {
     return (
-      <AppShell title={card.name} subtitle="Låst med PIN">
+      <AppShell title={card.name} subtitle={t("lockedWithPin")}>
         <Toaster position="top-center" />
         <div className="mt-8 mx-auto max-w-xs rounded-3xl border border-border bg-card p-6 text-center">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
             <Lock className="h-6 w-6" />
           </div>
-          <p className="mt-4 text-sm font-medium">Skriv inn PIN for å se kortet</p>
+          <p className="mt-4 text-sm font-medium">{t("enterPinToView")}</p>
           <form onSubmit={tryUnlock} className="mt-4 space-y-3">
             <input
               autoFocus
@@ -118,10 +118,10 @@ function CardDetail() {
               className="w-full rounded-xl border border-border bg-background px-3 py-3 text-center text-lg tracking-[0.5em] outline-none focus:border-primary"
             />
             <button disabled={checking} className="w-full rounded-xl bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
-              {checking ? "Sjekker…" : "Lås opp"}
+              {checking ? t("checkingWord") : t("unlockWord")}
             </button>
           </form>
-          <Link to="/cards" className="mt-4 inline-block text-xs text-muted-foreground hover:underline">Tilbake til kort</Link>
+          <Link to="/cards" className="mt-4 inline-block text-xs text-muted-foreground hover:underline">{t("backToCards")}</Link>
         </div>
       </AppShell>
     );
@@ -129,10 +129,10 @@ function CardDetail() {
 
   return (
     <AppShell
-      title={card?.name ?? "Kort"}
-      subtitle={`${card?.owner_name ? card.owner_name + " · " : ""}•••• ${card?.last4 ?? "0000"} · ${total} transaksjoner`}
+      title={card?.name ?? t("cardFallback")}
+      subtitle={`${card?.owner_name ? card.owner_name + " · " : ""}•••• ${card?.last4 ?? "0000"} · ${total} ${t("txWord")}`}
       right={
-        <Link to="/cards" className="grid h-10 w-10 place-items-center rounded-full bg-secondary hover:bg-accent" aria-label="Tilbake">
+        <Link to="/cards" className="grid h-10 w-10 place-items-center rounded-full bg-secondary hover:bg-accent" aria-label={t("backWord")}>
           <ArrowLeft className="h-4 w-4" />
         </Link>
       }
@@ -149,7 +149,7 @@ function CardDetail() {
                 : "border-border bg-card hover:bg-accent"
             }`}
           >
-            {p.label}
+            {t(p.labelKey)}
           </button>
         ))}
       </div>
