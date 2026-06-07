@@ -67,7 +67,7 @@ function SettingsPage() {
       discord: profile.discord || null,
     }).eq("id", user.id);
     setSavingProfile(false);
-    if (error) toast.error(error.message); else toast.success("Profil lagret");
+    if (error) toast.error(error.message); else toast.success(t("setProfileSaved"));
   }
 
   return (
