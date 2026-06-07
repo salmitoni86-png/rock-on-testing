@@ -89,27 +89,27 @@ function SettingsPage() {
           ))}
         </div>
         <p className="mt-3 rounded-lg border border-dashed border-border bg-background/60 p-3 text-[11px] text-muted-foreground">
-          💎 <span className="font-medium text-foreground">DeepL Pro</span> kan kobles til for proff oversettelse av blogginnlegg og support-chat. Be admin om å legge til <code className="font-mono">DEEPL_API_KEY</code>.
+          💎 {t("setDeeplHint")}
         </p>
       </section>
 
       {/* Contact info */}
       <section className="mt-4 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Kontaktinfo</p>
-        <p className="mt-1 text-xs text-muted-foreground">Brukes for varsler og kontoadministrasjon</p>
+        <p className="text-sm font-medium">{t("contact")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("setContactHint")}</p>
         <div className="mt-3 space-y-2">
-          <Field icon={<Phone className="h-4 w-4" />} placeholder="+47 …" value={profile.phone ?? ""} onChange={(v) => patchProfile("phone", v)} label="Telefon" />
-          <Field icon={<Mail className="h-4 w-4" />} placeholder="navn@eksempel.no" value={profile.contact_email ?? ""} onChange={(v) => patchProfile("contact_email", v)} label="E-post for varsler" type="email" />
+          <Field icon={<Phone className="h-4 w-4" />} placeholder={t("phonePlaceholder")} value={profile.phone ?? ""} onChange={(v) => patchProfile("phone", v)} label={t("setPhoneLabel")} />
+          <Field icon={<Mail className="h-4 w-4" />} placeholder={t("emailPlaceholder")} value={profile.contact_email ?? ""} onChange={(v) => patchProfile("contact_email", v)} label={t("setEmailNotifLabel")} type="email" />
         </div>
       </section>
 
       {/* Social handles */}
       <section className="mt-4 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Sosiale håndtak</p>
-        <p className="mt-1 text-xs text-muted-foreground">Få varsler levert dit du foretrekker</p>
+        <p className="text-sm font-medium">{t("setSocial")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("setSocialHint")}</p>
         <div className="mt-3 space-y-2">
           <Field icon={<SendIcon className="h-4 w-4 text-[#229ED9]" />} placeholder="@brukernavn" value={profile.telegram ?? ""} onChange={(v) => patchProfile("telegram", v)} label="Telegram" />
-          <Field icon={<MessageCircle className="h-4 w-4 text-[#25D366]" />} placeholder="+47 …" value={profile.whatsapp ?? ""} onChange={(v) => patchProfile("whatsapp", v)} label="WhatsApp" />
+          <Field icon={<MessageCircle className="h-4 w-4 text-[#25D366]" />} placeholder={t("phonePlaceholder")} value={profile.whatsapp ?? ""} onChange={(v) => patchProfile("whatsapp", v)} label="WhatsApp" />
           <Field icon={<Ghost className="h-4 w-4 text-[#FFFC00]" />} placeholder="snap-bruker" value={profile.snapchat ?? ""} onChange={(v) => patchProfile("snapchat", v)} label="Snapchat" />
           <Field icon={<Hash className="h-4 w-4 text-[#5865F2]" />} placeholder="bruker#0000" value={profile.discord ?? ""} onChange={(v) => patchProfile("discord", v)} label="Discord" />
         </div>
@@ -118,7 +118,7 @@ function SettingsPage() {
           disabled={savingProfile}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
-          <Save className="h-4 w-4" /> {savingProfile ? "Lagrer…" : "Lagre profil"}
+          <Save className="h-4 w-4" /> {savingProfile ? t("setSaving") : t("setSaveProfile")}
         </button>
       </section>
 
