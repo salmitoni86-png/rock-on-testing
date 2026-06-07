@@ -126,9 +126,9 @@ function SettingsPage() {
       <section className="mt-4 overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#5865F2]/15 via-card to-card p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold">Bli med på Discord-serveren</p>
+            <p className="text-sm font-semibold">{t("setDiscordTitle")}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Live-varsler, SoS-kanal, beta-tester og direkte kontakt med teamet. 2 481 medlemmer.
+              {t("setDiscordDesc", { n: "2 481" })}
             </p>
             <p className="mt-1 font-mono text-[10px] text-muted-foreground">{DISCORD_INVITE}</p>
           </div>
@@ -140,7 +140,7 @@ function SettingsPage() {
           onClick={() => setDiscordOpen(true)}
           className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
         >
-          Se serverinfo og bli med
+          {t("setDiscordCta")}
         </button>
       </section>
 
@@ -148,26 +148,26 @@ function SettingsPage() {
       <section className="mt-4 rounded-2xl border border-border bg-card p-4">
         <p className="text-sm font-medium">{t("notifications")}</p>
         <p className="mt-1 text-xs text-muted-foreground">{t("notifHint")}</p>
-        <Toggle label="Push" v={s.channels.push} on={(v) => update({ channels: { ...s.channels, push: v } })} />
-        <Toggle label="E-post" v={s.channels.email} on={(v) => update({ channels: { ...s.channels, email: v } })} />
-        <Toggle label="SMS" v={s.channels.sms} on={(v) => update({ channels: { ...s.channels, sms: v } })} />
-        <Toggle label="WhatsApp" v={s.channels.whatsapp} on={(v) => update({ channels: { ...s.channels, whatsapp: v } })} />
-        <Toggle label="Firebase" v={s.channels.firebase} on={(v) => update({ channels: { ...s.channels, firebase: v } })} />
+        <Toggle label={t("chPush")} v={s.channels.push} on={(v) => update({ channels: { ...s.channels, push: v } })} />
+        <Toggle label={t("chEmail")} v={s.channels.email} on={(v) => update({ channels: { ...s.channels, email: v } })} />
+        <Toggle label={t("chSms")} v={s.channels.sms} on={(v) => update({ channels: { ...s.channels, sms: v } })} />
+        <Toggle label={t("chWhatsapp")} v={s.channels.whatsapp} on={(v) => update({ channels: { ...s.channels, whatsapp: v } })} />
+        <Toggle label={t("chFirebase")} v={s.channels.firebase} on={(v) => update({ channels: { ...s.channels, firebase: v } })} />
       </section>
 
       <section className="mt-4 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Hendelser</p>
-        <Toggle label="Lønn / NAV" v={s.events.salary} on={(v) => update({ events: { ...s.events, salary: v } })} />
-        <Toggle label="Store kjøp" v={s.events.largeSpend} on={(v) => update({ events: { ...s.events, largeSpend: v } })} />
-        <Toggle label="Lav saldo" v={s.events.lowBalance} on={(v) => update({ events: { ...s.events, lowBalance: v } })} />
-        <Toggle label="Daglig sammendrag" v={s.events.dailySummary} on={(v) => update({ events: { ...s.events, dailySummary: v } })} />
+        <p className="text-sm font-medium">{t("setEvents")}</p>
+        <Toggle label={t("evSalaryShort")} v={s.events.salary} on={(v) => update({ events: { ...s.events, salary: v } })} />
+        <Toggle label={t("evLargeShort")} v={s.events.largeSpend} on={(v) => update({ events: { ...s.events, largeSpend: v } })} />
+        <Toggle label={t("evLowShort")} v={s.events.lowBalance} on={(v) => update({ events: { ...s.events, lowBalance: v } })} />
+        <Toggle label={t("evDailyShort")} v={s.events.dailySummary} on={(v) => update({ events: { ...s.events, dailySummary: v } })} />
       </section>
 
       <button
-        onClick={async () => { await supabase.auth.signOut(); toast.success("Logget ut"); }}
+        onClick={async () => { await supabase.auth.signOut(); toast.success(t("setLoggedOut")); }}
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium hover:bg-accent"
       >
-        <LogOut className="h-4 w-4" /> Logg ut
+        <LogOut className="h-4 w-4" /> {t("setLogout")}
       </button>
     </AppShell>
   );
