@@ -196,18 +196,18 @@ function CardDetail() {
       {/* Manual range + page size + print */}
       <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-3 text-sm">
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("fromWord")}</span>
           <input type="date" value={from} onChange={(e) => { setPage(0); setFrom(e.target.value); }}
             className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm" />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Til</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("toWord")}</span>
           <input type="date" value={to} onChange={(e) => { setPage(0); setTo(e.target.value); }}
             className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm" />
         </label>
         <div className="col-span-2 flex items-center justify-between">
           <label className="flex items-center gap-2 text-xs">
-            Per side:
+            {t("perPage")}
             <select value={pageSize} onChange={(e) => { setPage(0); setPageSize(Number(e.target.value)); }}
               className="rounded-lg border border-border bg-background px-2 py-1 text-xs">
               <option value={10}>10</option>
@@ -220,7 +220,7 @@ function CardDetail() {
             onClick={() => navigate({ to: "/cards/$id/print", params: { id }, search: { from, to } as any })}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
           >
-            <Printer className="h-3.5 w-3.5" /> Skriv ut
+            <Printer className="h-3.5 w-3.5" /> {t("printWord")}
           </button>
         </div>
       </div>
