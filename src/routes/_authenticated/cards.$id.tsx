@@ -19,11 +19,11 @@ export const Route = createFileRoute("/_authenticated/cards/$id")({
 type Card = { id: string; name: string; last4: string | null; last_balance: number | null; owner_name: string | null; pin_hash: string | null };
 
 type PeriodKey = "month" | "3m" | "6m" | "year";
-const PERIODS: { key: PeriodKey; label: string; months: number }[] = [
-  { key: "month", label: "Måned", months: 1 },
-  { key: "3m", label: "3 mnd", months: 3 },
-  { key: "6m", label: "Halvår", months: 6 },
-  { key: "year", label: "År", months: 12 },
+const PERIODS: { key: PeriodKey; labelKey: string; months: number }[] = [
+  { key: "month", labelKey: "pMonth", months: 1 },
+  { key: "3m", labelKey: "p3m", months: 3 },
+  { key: "6m", labelKey: "p6m", months: 6 },
+  { key: "year", labelKey: "pYear", months: 12 },
 ];
 
 function isoDay(d: Date) { return d.toISOString().slice(0, 10); }
