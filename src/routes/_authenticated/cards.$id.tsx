@@ -19,11 +19,11 @@ export const Route = createFileRoute("/_authenticated/cards/$id")({
 type Card = { id: string; name: string; last4: string | null; last_balance: number | null; owner_name: string | null; pin_hash: string | null };
 
 type PeriodKey = "month" | "3m" | "6m" | "year";
-const PERIODS: { key: PeriodKey; label: string; months: number }[] = [
-  { key: "month", label: "Måned", months: 1 },
-  { key: "3m", label: "3 mnd", months: 3 },
-  { key: "6m", label: "Halvår", months: 6 },
-  { key: "year", label: "År", months: 12 },
+const PERIODS: { key: PeriodKey; labelKey: string; months: number }[] = [
+  { key: "month", labelKey: "pMonth", months: 1 },
+  { key: "3m", labelKey: "p3m", months: 3 },
+  { key: "6m", labelKey: "p6m", months: 6 },
+  { key: "year", labelKey: "pYear", months: 12 },
 ];
 
 function isoDay(d: Date) { return d.toISOString().slice(0, 10); }
@@ -31,7 +31,7 @@ function monthsAgo(n: number) { const d = new Date(); d.setMonth(d.getMonth() - 
 
 function CardDetail() {
   const { id } = Route.useParams();
-  const { fmt } = useLang();
+  const { t, fmt } = useLang();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const verifyPinFn = useServerFn(verifyCardPin);
@@ -85,13 +85,13 @@ function CardDetail() {
 
   async function tryUnlock(e: React.FormEvent) {
     e.preventDefault();
-    if (!/^\d{4,8}$/.test(pin)) return toast.error("PIN må være 4–8 sifre");
+    if (!/^\d{4,8}$/.test(pin)) return toast.error(t("tPinDigits"));
     setChecking(true);
     try {
       const res = await verifyPinFn({ data: { cardId: id, pin } });
       if (res.ok) { setUnlocked(true); setPin(""); }
-      else toast.error("Feil PIN");
-    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+      else toast.error(t("wrongPin"));
+    } catch (err: any) { toast.error(err?.message ?? t("tFailed")); }
     finally { setChecking(false); }
   }
 
@@ -99,13 +99,13 @@ function CardDetail() {
 
   if (card && card.pin_hash && !unlocked) {
     return (
-      <AppShell title={card.name} subtitle="Låst med PIN">
+      <AppShell title={card.name} subtitle={t("lockedWithPin")}>
         <Toaster position="top-center" />
         <div className="mt-8 mx-auto max-w-xs rounded-3xl border border-border bg-card p-6 text-center">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
             <Lock className="h-6 w-6" />
           </div>
-          <p className="mt-4 text-sm font-medium">Skriv inn PIN for å se kortet</p>
+          <p className="mt-4 text-sm font-medium">{t("enterPinToView")}</p>
           <form onSubmit={tryUnlock} className="mt-4 space-y-3">
             <input
               autoFocus
@@ -118,10 +118,10 @@ function CardDetail() {
               className="w-full rounded-xl border border-border bg-background px-3 py-3 text-center text-lg tracking-[0.5em] outline-none focus:border-primary"
             />
             <button disabled={checking} className="w-full rounded-xl bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
-              {checking ? "Sjekker…" : "Lås opp"}
+              {checking ? t("checkingWord") : t("unlockWord")}
             </button>
           </form>
-          <Link to="/cards" className="mt-4 inline-block text-xs text-muted-foreground hover:underline">Tilbake til kort</Link>
+          <Link to="/cards" className="mt-4 inline-block text-xs text-muted-foreground hover:underline">{t("backToCards")}</Link>
         </div>
       </AppShell>
     );
@@ -129,10 +129,10 @@ function CardDetail() {
 
   return (
     <AppShell
-      title={card?.name ?? "Kort"}
-      subtitle={`${card?.owner_name ? card.owner_name + " · " : ""}•••• ${card?.last4 ?? "0000"} · ${total} transaksjoner`}
+      title={card?.name ?? t("cardFallback")}
+      subtitle={`${card?.owner_name ? card.owner_name + " · " : ""}•••• ${card?.last4 ?? "0000"} · ${total} ${t("txWord")}`}
       right={
-        <Link to="/cards" className="grid h-10 w-10 place-items-center rounded-full bg-secondary hover:bg-accent" aria-label="Tilbake">
+        <Link to="/cards" className="grid h-10 w-10 place-items-center rounded-full bg-secondary hover:bg-accent" aria-label={t("backWord")}>
           <ArrowLeft className="h-4 w-4" />
         </Link>
       }
@@ -149,28 +149,28 @@ function CardDetail() {
                 : "border-border bg-card hover:bg-accent"
             }`}
           >
-            {p.label}
+            {t(p.labelKey)}
           </button>
         ))}
       </div>
 
       {/* Usage summary */}
       <section className="mt-3 rounded-2xl border border-border bg-card p-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Forbruk i perioden</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("spendInPeriod")}</p>
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl bg-[color:var(--income)]/10 p-3">
             <ArrowDownLeft className="mx-auto h-4 w-4 text-[color:var(--income)]" />
             <p className="tabular mt-1 text-sm font-semibold text-[color:var(--income)]">{fmt.money(summary?.income ?? 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Inn</p>
+            <p className="text-[10px] text-muted-foreground">{t("inWord")}</p>
           </div>
           <div className="rounded-xl bg-[color:var(--spend)]/10 p-3">
             <ArrowUpRight className="mx-auto h-4 w-4 text-[color:var(--spend)]" />
             <p className="tabular mt-1 text-sm font-semibold">{fmt.money(summary?.spend ?? 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Ut</p>
+            <p className="text-[10px] text-muted-foreground">{t("outWord")}</p>
           </div>
           <div className="rounded-xl bg-secondary/60 p-3">
             <p className="tabular mt-1 text-sm font-semibold">{fmt.money(summary?.net ?? 0)}</p>
-            <p className="text-[10px] text-muted-foreground">Netto · {summary?.count ?? 0} tx</p>
+            <p className="text-[10px] text-muted-foreground">{t("netWord")} · {summary?.count ?? 0} tx</p>
           </div>
         </div>
         {summary && summary.topCategories.length > 0 && (
@@ -196,18 +196,18 @@ function CardDetail() {
       {/* Manual range + page size + print */}
       <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-3 text-sm">
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("fromWord")}</span>
           <input type="date" value={from} onChange={(e) => { setPage(0); setFrom(e.target.value); }}
             className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm" />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Til</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("toWord")}</span>
           <input type="date" value={to} onChange={(e) => { setPage(0); setTo(e.target.value); }}
             className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm" />
         </label>
         <div className="col-span-2 flex items-center justify-between">
           <label className="flex items-center gap-2 text-xs">
-            Per side:
+            {t("perPage")}
             <select value={pageSize} onChange={(e) => { setPage(0); setPageSize(Number(e.target.value)); }}
               className="rounded-lg border border-border bg-background px-2 py-1 text-xs">
               <option value={10}>10</option>
@@ -220,7 +220,7 @@ function CardDetail() {
             onClick={() => navigate({ to: "/cards/$id/print", params: { id }, search: { from, to } as any })}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
           >
-            <Printer className="h-3.5 w-3.5" /> Skriv ut
+            <Printer className="h-3.5 w-3.5" /> {t("printWord")}
           </button>
         </div>
       </div>
@@ -236,12 +236,12 @@ function CardDetail() {
                 {tx.merchant}
                 {tx.is_salary && (
                   <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-[color:var(--salary)]/15 px-1.5 py-0.5 text-[9px] font-medium text-[color:var(--salary)] align-middle">
-                    <Sparkles className="h-2.5 w-2.5" /> Lønn
+                    <Sparkles className="h-2.5 w-2.5" /> {t("salaryShort")}
                   </span>
                 )}
               </p>
               <p className="truncate text-xs text-muted-foreground">
-                {tx.category ?? "Annet"} · {fmt.date(tx.posted_at)}
+                {tx.category ?? t("otherWord")} · {fmt.date(tx.posted_at)}
               </p>
             </div>
             <p className={`tabular shrink-0 text-sm font-semibold ${tx.amount_nok > 0 ? "text-[color:var(--income)]" : ""}`}>
@@ -251,7 +251,7 @@ function CardDetail() {
         ))}
         {rows.length === 0 && (
           <li className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Ingen transaksjoner i valgt periode.
+            {t("noTxPeriod")}
           </li>
         )}
       </ul>
@@ -259,12 +259,12 @@ function CardDetail() {
       <nav className="mt-4 flex items-center justify-between text-sm">
         <button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}
           className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 disabled:opacity-40">
-          <ChevronLeft className="h-4 w-4" /> Forrige
+          <ChevronLeft className="h-4 w-4" /> {t("prevWord")}
         </button>
-        <span className="text-xs text-muted-foreground">Side {page + 1} / {totalPages}</span>
+        <span className="text-xs text-muted-foreground">{t("sideWord", { n: page + 1, total: totalPages })}</span>
         <button disabled={page + 1 >= totalPages} onClick={() => setPage((p) => p + 1)}
           className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 disabled:opacity-40">
-          Neste <ChevronRight className="h-4 w-4" />
+          {t("nextWord")} <ChevronRight className="h-4 w-4" />
         </button>
       </nav>
     </AppShell>

@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { useLang } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/friends")({
@@ -16,6 +17,7 @@ type Friendship = { id: string; requester_id: string; addressee_id: string; stat
 
 function FriendsPage() {
   const { user } = useAuth();
+  const { t } = useLang();
   const [friendships, setFriendships] = useState<Friendship[]>([]);
   const [profiles, setProfiles] = useState<Record<string, { username: string; display_name: string | null }>>({});
   const [search, setSearch] = useState("");
@@ -48,11 +50,11 @@ function FriendsPage() {
   async function sendRequest(toId: string) {
     if (!user) return;
     const { error } = await supabase.from("friendships").insert({ requester_id: user.id, addressee_id: toId });
-    if (error) toast.error(error.message); else { toast.success("Forespørsel sendt"); load(); setSearchResults([]); setSearch(""); }
+    if (error) toast.error(error.message); else { toast.success(t("reqSent")); load(); setSearchResults([]); setSearch(""); }
   }
   async function accept(id: string) {
     await supabase.from("friendships").update({ status: "accepted" }).eq("id", id);
-    toast.success("Venn lagt til"); load();
+    toast.success(t("friendAdded")); load();
   }
   async function decline(id: string) {
     await supabase.from("friendships").delete().eq("id", id); load();
@@ -64,10 +66,10 @@ function FriendsPage() {
   const outgoing = friendships.filter((f) => f.status === "pending" && f.requester_id === user.id);
 
   return (
-    <AppShell title="Venner" subtitle={`${accepted.length} venner`}>
+    <AppShell title={t("friendsTitle")} subtitle={t("friendsCountLbl", { n: accepted.length })}>
       <Toaster position="top-center" />
       <section className="rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Finn venner</p>
+        <p className="text-sm font-medium">{t("findFriends")}</p>
         <div className="mt-3 flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -75,11 +77,11 @@ function FriendsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && doSearch()}
-              placeholder="Søk på brukernavn…"
+              placeholder={t("searchUsernamePh")}
               className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
             />
           </div>
-          <button onClick={doSearch} className="rounded-xl bg-primary px-4 py-2 text-sm text-primary-foreground">Søk</button>
+          <button onClick={doSearch} className="rounded-xl bg-primary px-4 py-2 text-sm text-primary-foreground">{t("searchBtn")}</button>
         </div>
         {searchResults.length > 0 && (
           <ul className="mt-3 space-y-2">
@@ -87,7 +89,7 @@ function FriendsPage() {
               <li key={r.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-2">
                 <span className="text-sm">@{r.username}</span>
                 <button onClick={() => sendRequest(r.id)} className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1 text-xs text-primary-foreground">
-                  <UserPlus className="h-3 w-3" /> Legg til
+                  <UserPlus className="h-3 w-3" /> {t("addFriendBtn")}
                 </button>
               </li>
             ))}
@@ -97,11 +99,11 @@ function FriendsPage() {
 
       {incoming.length > 0 && (
         <section className="mt-4 rounded-2xl border border-border bg-card p-4">
-          <p className="text-sm font-medium">Forespørsler ({incoming.length})</p>
+          <p className="text-sm font-medium">{t("requestsWord")} ({incoming.length})</p>
           <ul className="mt-3 space-y-2">
             {incoming.map((f) => (
               <li key={f.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-2">
-                <span className="text-sm">@{profiles[f.requester_id]?.username ?? "ukjent"}</span>
+                <span className="text-sm">@{profiles[f.requester_id]?.username ?? t("unknownWord")}</span>
                 <div className="flex gap-1">
                   <button onClick={() => accept(f.id)} className="grid h-8 w-8 place-items-center rounded-lg bg-[color:var(--income)]/15 text-[color:var(--income)]"><Check className="h-4 w-4" /></button>
                   <button onClick={() => decline(f.id)} className="grid h-8 w-8 place-items-center rounded-lg bg-destructive/15 text-destructive"><X className="h-4 w-4" /></button>
@@ -113,9 +115,9 @@ function FriendsPage() {
       )}
 
       <section className="mt-4 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Vennene dine</p>
+        <p className="text-sm font-medium">{t("yourFriends")}</p>
         {accepted.length === 0 ? (
-          <p className="mt-3 text-xs text-muted-foreground">Ingen venner enda. Søk etter et brukernavn over!</p>
+          <p className="mt-3 text-xs text-muted-foreground">{t("noFriends")}</p>
         ) : (
           <ul className="mt-3 space-y-2">
             {accepted.map((f) => {
@@ -124,10 +126,10 @@ function FriendsPage() {
               return (
                 <li key={f.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
                   <div>
-                    <p className="text-sm font-medium">{p?.display_name ?? `@${p?.username ?? "ukjent"}`}</p>
+                    <p className="text-sm font-medium">{p?.display_name ?? `@${p?.username ?? t("unknownWord")}`}</p>
                     {p?.display_name && <p className="text-xs text-muted-foreground">@{p.username}</p>}
                   </div>
-                  <button onClick={() => decline(f.id)} className="text-xs text-muted-foreground hover:text-destructive">Fjern</button>
+                  <button onClick={() => decline(f.id)} className="text-xs text-muted-foreground hover:text-destructive">{t("removeWord")}</button>
                 </li>
               );
             })}
@@ -137,12 +139,12 @@ function FriendsPage() {
 
       {outgoing.length > 0 && (
         <section className="mt-4 rounded-2xl border border-border bg-card p-4">
-          <p className="text-sm font-medium">Ventende ({outgoing.length})</p>
+          <p className="text-sm font-medium">{t("pendingWord")} ({outgoing.length})</p>
           <ul className="mt-3 space-y-2">
             {outgoing.map((f) => (
               <li key={f.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-2 text-sm">
-                <span>@{profiles[f.addressee_id]?.username ?? "ukjent"}</span>
-                <span className="text-xs text-muted-foreground">venter…</span>
+                <span>@{profiles[f.addressee_id]?.username ?? t("unknownWord")}</span>
+                <span className="text-xs text-muted-foreground">{t("waitingWord")}</span>
               </li>
             ))}
           </ul>

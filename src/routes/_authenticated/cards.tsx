@@ -7,6 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { useLang } from "@/lib/i18n";
 import { setCardPin, clearCardPin } from "@/lib/card-pin.functions";
 
 export const Route = createFileRoute("/_authenticated/cards")({
@@ -24,6 +25,7 @@ type Req = { id: string; card_id: string; requested_by: string; status: string; 
 
 function CardsPage() {
   const { user } = useAuth();
+  const { t } = useLang();
   const setPinFn = useServerFn(setCardPin);
   const clearPinFn = useServerFn(clearCardPin);
   const [cards, setCards] = useState<Card[]>([]);
@@ -58,8 +60,8 @@ function CardsPage() {
   async function addCard(e: React.FormEvent) {
     e.preventDefault();
     const num = newNumber.replace(/\s+/g, "");
-    if (!/^\d{8,19}$/.test(num)) return toast.error("Ugyldig kortnummer");
-    if (newPin && !/^\d{4,8}$/.test(newPin)) return toast.error("PIN må være 4–8 sifre");
+    if (!/^\d{8,19}$/.test(num)) return toast.error(t("tInvalidCardNumber"));
+    if (newPin && !/^\d{4,8}$/.test(newPin)) return toast.error(t("tPinDigits"));
     const { data: created, error } = await supabase.from("cards").insert({
       name: newName.trim() || "DNB Kronekort",
       card_number: num,
@@ -70,35 +72,35 @@ function CardsPage() {
     if (error) return toast.error(error.message);
     if (newPin && created) {
       try { await setPinFn({ data: { cardId: created.id, pin: newPin } }); }
-      catch (err: any) { toast.error(err?.message ?? "Kunne ikke sette PIN"); }
+      catch (err: any) { toast.error(err?.message ?? t("tCouldNotSetPin")); }
     }
     setNewNumber(""); setNewName(""); setNewOwner(""); setNewPin("");
-    toast.success("Kort lagt til");
+    toast.success(t("tCardAdded"));
     refresh();
   }
 
   async function changePin(cardId: string) {
     const pin = (pinInput[cardId] ?? "").trim();
-    if (!/^\d{4,8}$/.test(pin)) return toast.error("PIN må være 4–8 sifre");
+    if (!/^\d{4,8}$/.test(pin)) return toast.error(t("tPinDigits"));
     try {
       await setPinFn({ data: { cardId, pin } });
       setPinInput((s) => ({ ...s, [cardId]: "" }));
-      toast.success("PIN lagret");
+      toast.success(t("tPinSaved"));
       refresh();
-    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+    } catch (err: any) { toast.error(err?.message ?? t("tFailed")); }
   }
 
   async function removePin(cardId: string) {
     try {
       await clearPinFn({ data: { cardId } });
-      toast.success("PIN fjernet");
+      toast.success(t("tPinRemoved"));
       refresh();
-    } catch (err: any) { toast.error(err?.message ?? "Feilet"); }
+    } catch (err: any) { toast.error(err?.message ?? t("tFailed")); }
   }
 
 
   async function removeCard(id: string) {
-    if (!confirm("Slette kortet?")) return;
+    if (!confirm(t("tConfirmDeleteCard"))) return;
     const { error } = await supabase.from("cards").delete().eq("id", id);
     if (error) toast.error(error.message); else refresh();
   }
@@ -106,12 +108,12 @@ function CardsPage() {
   async function joinCard(e: React.FormEvent) {
     e.preventDefault();
     const { data: prof } = await supabase.from("profiles").select("id").eq("username", joinOwner.trim().toLowerCase()).maybeSingle();
-    if (!prof) return toast.error("Fant ikke bruker");
+    if (!prof) return toast.error(t("tUserNotFound"));
     const { data: card } = await supabase.from("cards").select("id").eq("owner_id", prof.id).eq("last4", joinLast4.trim()).maybeSingle();
-    if (!card) return toast.error("Fant ikke kort");
+    if (!card) return toast.error(t("tCardNotFound"));
     const { error } = await supabase.from("card_share_requests").insert({ card_id: card.id, requested_by: user!.id });
     if (error) return toast.error(error.message);
-    toast.success("Forespørsel sendt — venter på godkjenning");
+    toast.success(t("tReqPending"));
     setJoinOwner(""); setJoinLast4("");
   }
 
@@ -125,7 +127,7 @@ function CardsPage() {
     await supabase.from("card_share_requests").update({
       status: accept ? "accepted" : "declined", resolved_at: new Date().toISOString(),
     }).eq("id", req.id);
-    toast.success(accept ? "Godkjent" : "Avslått");
+    toast.success(accept ? t("tApproved") : t("tDeclined"));
     refresh();
   }
 
@@ -133,12 +135,12 @@ function CardsPage() {
     const uname = (addUsername[cardId] ?? "").trim().toLowerCase();
     if (!uname) return;
     const { data: prof } = await supabase.from("profiles").select("id").eq("username", uname).maybeSingle();
-    if (!prof) return toast.error("Fant ikke bruker");
+    if (!prof) return toast.error(t("tUserNotFound"));
     const { error } = await supabase.from("card_members").insert({
       card_id: cardId, user_id: prof.id, role: "viewer",
     });
     if (error) return toast.error(error.message);
-    toast.success("Lagt til");
+    toast.success(t("tAdded"));
     setAddUsername((s) => ({ ...s, [cardId]: "" }));
     refresh();
   }
@@ -149,37 +151,37 @@ function CardsPage() {
   }
 
   return (
-    <AppShell title="Mine kort" subtitle={`${cards.length} aktiv${cards.length === 1 ? "t" : "e"} kort`}>
+    <AppShell title={t("cardsTitle")} subtitle={t("cardsActiveCount", { n: cards.length })}>
       <Toaster position="top-center" />
 
       {/* Add */}
       <form onSubmit={addCard} className="space-y-2 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Legg til DNB Kronekort</p>
-        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Kortnavn (valgfritt)"
+        <p className="text-sm font-medium">{t("addCardTitle")}</p>
+        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t("cardNamePh")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={newOwner} onChange={(e) => setNewOwner(e.target.value)} placeholder="Navn på kortholder"
+        <input value={newOwner} onChange={(e) => setNewOwner(e.target.value)} placeholder={t("cardHolderPh")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} placeholder="Kortnummer" inputMode="numeric"
+        <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} placeholder={t("cardNumberPh")} inputMode="numeric"
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))} placeholder="App-PIN (valgfritt, 4–8 sifre)" inputMode="numeric" maxLength={8} type="password"
+        <input value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))} placeholder={t("cardPinPh")} inputMode="numeric" maxLength={8} type="password"
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <p className="text-[11px] text-muted-foreground">PIN-koden låser visning av kortet i appen og lagres kun som en sikker hash — aldri som lesbare sifre.</p>
+        <p className="text-[11px] text-muted-foreground">{t("cardPinNote")}</p>
         <button className="w-full rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
-          <Plus className="mr-1 inline h-4 w-4" /> Legg til kort
+          <Plus className="mr-1 inline h-4 w-4" /> {t("addCardBtn")}
         </button>
       </form>
 
 
       {/* Join */}
       <form onSubmit={joinCard} className="mt-4 space-y-2 rounded-2xl border border-border bg-card p-4">
-        <p className="text-sm font-medium">Bli med på et kort</p>
-        <p className="text-xs text-muted-foreground">Brukernavnet til eier + siste 4 sifre på kortet.</p>
-        <input value={joinOwner} onChange={(e) => setJoinOwner(e.target.value)} placeholder="Brukernavn til eier"
+        <p className="text-sm font-medium">{t("joinTitle")}</p>
+        <p className="text-xs text-muted-foreground">{t("joinHint")}</p>
+        <input value={joinOwner} onChange={(e) => setJoinOwner(e.target.value)} placeholder={t("joinOwnerPh")}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-        <input value={joinLast4} onChange={(e) => setJoinLast4(e.target.value)} placeholder="Siste 4 sifre" maxLength={4}
+        <input value={joinLast4} onChange={(e) => setJoinLast4(e.target.value)} placeholder={t("joinLast4Ph")} maxLength={4}
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
         <button className="w-full rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium hover:bg-accent">
-          Send forespørsel
+          {t("joinSend")}
         </button>
       </form>
 
@@ -214,7 +216,7 @@ function CardsPage() {
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-white/80">
                     {c.pin_hash ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
-                    {c.pin_hash ? "PIN-låst" : "Ulåst"}
+                    {c.pin_hash ? t("pinLockedBadge") : t("unlockedBadge")}
                   </span>
                 </div>
               </div>
@@ -224,13 +226,13 @@ function CardsPage() {
                 params={{ id: c.id }}
                 className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                Se transaksjoner <ArrowRight className="h-3 w-3" />
+                {t("seeTx")} <ArrowRight className="h-3 w-3" />
               </Link>
 
               {ownerHere && (
                 <div className="rounded-2xl border border-border bg-card p-4">
                   <p className="flex items-center gap-2 text-sm font-medium">
-                    <Lock className="h-4 w-4" /> PIN-lås
+                    <Lock className="h-4 w-4" /> {t("pinLock")}
                   </p>
                   <div className="mt-2 flex gap-2">
                     <input
@@ -239,15 +241,15 @@ function CardsPage() {
                       maxLength={8}
                       value={pinInput[c.id] ?? ""}
                       onChange={(e) => setPinInput((s) => ({ ...s, [c.id]: e.target.value.replace(/\D/g, "") }))}
-                      placeholder={c.pin_hash ? "Ny PIN (4–8 sifre)" : "Sett PIN (4–8 sifre)"}
+                      placeholder={c.pin_hash ? t("pinNewPh") : t("pinSetPh")}
                       className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                     />
                     <button onClick={() => changePin(c.id)} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90">
-                      Lagre
+                      {t("saveWord")}
                     </button>
                     {c.pin_hash && (
                       <button onClick={() => removePin(c.id)} className="rounded-lg border border-border bg-secondary px-3 py-2 text-sm hover:bg-accent">
-                        Fjern
+                        {t("removeWord")}
                       </button>
                     )}
                   </div>
@@ -257,7 +259,7 @@ function CardsPage() {
               {ownerHere && (
                 <div className="rounded-2xl border border-border bg-card p-4">
                   <p className="flex items-center gap-2 text-sm font-medium">
-                    <Users className="h-4 w-4" /> Medlemmer
+                    <Users className="h-4 w-4" /> {t("membersWord")}
                   </p>
 
                   <ul className="mt-2 space-y-1.5">
@@ -266,7 +268,7 @@ function CardsPage() {
                         <span>@{m.username ?? "—"} <span className="text-xs text-muted-foreground">({m.role})</span></span>
                         {m.role !== "owner" && (
                           <button onClick={() => removeMember(c.id, m.user_id)} className="text-xs text-destructive hover:underline">
-                            Fjern
+                            {t("removeWord")}
                           </button>
                         )}
                       </li>
@@ -277,7 +279,7 @@ function CardsPage() {
                     <input
                       value={addUsername[c.id] ?? ""}
                       onChange={(e) => setAddUsername((s) => ({ ...s, [c.id]: e.target.value }))}
-                      placeholder="Legg til brukernavn"
+                      placeholder={t("addUsernamePh")}
                       className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                     />
                     <button onClick={() => addMember(c.id)} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90">
@@ -287,7 +289,7 @@ function CardsPage() {
 
                   {cardReqs.length > 0 && (
                     <div className="mt-4">
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Forespørsler</p>
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("requestsWord")}</p>
                       <ul className="mt-2 space-y-1.5">
                         {cardReqs.map((r) => (
                           <li key={r.id} className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2 text-sm">
@@ -312,7 +314,7 @@ function CardsPage() {
         })}
         {cards.length === 0 && (
           <li className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Ingen kort enda. Legg til et over.
+            {t("noCards")}
           </li>
         )}
       </ul>
