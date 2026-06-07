@@ -19,6 +19,7 @@ type Tier = { id: number; threshold: number; title: string; perk: string };
 
 function InvitesPage() {
   const { user } = useAuth();
+  const { t, fmt } = useLang();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [email, setEmail] = useState("");
