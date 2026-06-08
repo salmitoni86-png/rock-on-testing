@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { useLang } from "@/lib/i18n";
 import { setCardPin, clearCardPin } from "@/lib/card-pin.functions";
+import { seedMockTransactions } from "@/lib/transactions";
 
 export const Route = createFileRoute("/_authenticated/cards")({
   head: () => ({ meta: [{ title: "Mine kort — Kronekort-X" }] }),
