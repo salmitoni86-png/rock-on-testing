@@ -71,9 +71,14 @@ function CardsPage() {
       owner_id: user!.id,
     }).select("id").single();
     if (error) return toast.error(error.message);
-    if (newPin && created) {
-      try { await setPinFn({ data: { cardId: created.id, pin: newPin } }); }
-      catch (err: any) { toast.error(err?.message ?? t("tCouldNotSetPin")); }
+    if (created) {
+      // Fetch & populate account activity (balance + transaction history).
+      try { await seedMockTransactions(created.id); }
+      catch (err: any) { console.error("seed failed", err); }
+      if (newPin) {
+        try { await setPinFn({ data: { cardId: created.id, pin: newPin } }); }
+        catch (err: any) { toast.error(err?.message ?? t("tCouldNotSetPin")); }
+      }
     }
     setNewNumber(""); setNewName(""); setNewOwner(""); setNewPin("");
     toast.success(t("tCardAdded"));
