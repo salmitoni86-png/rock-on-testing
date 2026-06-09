@@ -251,13 +251,25 @@ function CardsPage() {
                 </div>
               </div>
 
-              <Link
-                to="/cards/$id"
-                params={{ id: c.id }}
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-              >
-                {t("seeTx")} <ArrowRight className="h-3 w-3" />
-              </Link>
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  to="/cards/$id"
+                  params={{ id: c.id }}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                >
+                  {t("seeTx")} <ArrowRight className="h-3 w-3" />
+                </Link>
+                {ownerHere && (
+                  <button
+                    onClick={() => syncCard(c.id)}
+                    disabled={!!refreshing[c.id]}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${refreshing[c.id] ? "animate-spin" : ""}`} />
+                    {refreshing[c.id] ? t("refreshingTx") : t("refreshTx")}
+                  </button>
+                )}
+              </div>
 
               {ownerHere && (
                 <div className="rounded-2xl border border-border bg-card p-4">
