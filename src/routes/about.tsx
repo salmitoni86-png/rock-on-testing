@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Coffee, Heart, ExternalLink } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -18,51 +19,38 @@ export const Route = createFileRoute("/about")({
 });
 
 function AboutPage() {
+  const { t } = useLang();
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-3xl items-center justify-between px-6 pt-6">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Tilbake
+          <ArrowLeft className="h-4 w-4" /> {t("backWord")}
         </Link>
       </header>
 
       <main className="mx-auto max-w-3xl px-6 pb-24 pt-12">
         <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
-          Bygd av frustrasjon. Drevet av kaffe.
+          {t("aboutTitle")}
         </h1>
         <p className="mt-5 text-lg text-muted-foreground">
-          Kronekort-X startet som et lite hobbyprosjekt: en måte å slippe å logge inn i
-          nettbanken hver gang vi lurte på om lønna eller NAV-utbetalingen hadde kommet.
-          I dag er det en åpen plattform som hele familien kan dele.
+          {t("aboutIntro")}
         </p>
 
         <section className="mt-12 space-y-4 text-muted-foreground">
-          <h2 className="font-display text-2xl font-semibold text-foreground">Hvorfor</h2>
-          <p>
-            Norske banker har vanvittig gode apper — men ingen lar deg dele saldo med
-            samboer eller foreldre uten å gi fra deg BankID. Vi ønsket en pen, rask oversikt
-            som respekterer privatlivet og lar deg bestemme hvem som ser hva.
-          </p>
-          <h2 className="font-display text-2xl font-semibold text-foreground">Hvordan</h2>
-          <p>
-            Saldoen hentes automatisk seks ganger om dagen gjennom en proxy-rotasjon slik at
-            ingen IP-adresse blir bombardert. Inaktive kort sjekkes én gang i døgnet for å
-            spare ressurser. Tilgang til kortene styres av eieren — alltid.
-          </p>
-          <h2 className="font-display text-2xl font-semibold text-foreground">Hvem</h2>
-          <p>
-            Et lite team av norske utviklere som drikker for mye kaffe og elsker rene
-            grensesnitt. Du kan støtte videre arbeid under.
-          </p>
+          <h2 className="font-display text-2xl font-semibold text-foreground">{t("aboutWhyH")}</h2>
+          <p>{t("aboutWhyP")}</p>
+          <h2 className="font-display text-2xl font-semibold text-foreground">{t("aboutHowH")}</h2>
+          <p>{t("aboutHowP")}</p>
+          <h2 className="font-display text-2xl font-semibold text-foreground">{t("aboutWhoH")}</h2>
+          <p>{t("aboutWhoP")}</p>
         </section>
 
         {/* Donate */}
         <section className="mt-12 rounded-3xl border border-border bg-card p-8 text-center">
           <Heart className="mx-auto h-8 w-8 text-[color:var(--spend)]" />
-          <h2 className="mt-4 font-display text-2xl font-semibold">Støtt utviklerne</h2>
+          <h2 className="mt-4 font-display text-2xl font-semibold">{t("donateTitle")}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Kronekort-X er gratis og uten reklame. Hvis appen sparer deg tid, vurder å
-            spandere en kaffe — det holder serverne i live.
+            {t("donateBody")}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <a
@@ -85,12 +73,12 @@ function AboutPage() {
             </a>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Send oss gjerne lenkene deres så bytter vi placeholderne med ekte konti.
+            {t("donateNote")}
           </p>
         </section>
 
         <p className="mt-12 text-center text-xs text-muted-foreground">
-          Kronekort-X · v1.3 · Bygget med Lovable Cloud
+          {t("aboutFooter")}
         </p>
       </main>
     </div>

@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Play, Heart, MessageCircle, Share2, Sparkles } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 
 const REACTIONS = [
   { emoji: "🤩", x: "12%", y: "30%", delay: 0.2 },
@@ -10,27 +11,27 @@ const REACTIONS = [
   { emoji: "😍", x: "50%", y: "12%", delay: 1.8 },
 ];
 
-const QUOTES = [
-  { who: "Ida, 28", text: "Endelig — saldo uten BankID-styr." },
-  { who: "Magnus & familien", text: "Vi deler kortet uten å dele passord." },
-  { who: "Sara, frilanser", text: "Push idet NAV lander. Genialt." },
-];
-
 export function DemoVideoSection() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
+  const { t } = useLang();
+  const QUOTES = [
+    { who: t("q1who"), text: t("q1text") },
+    { who: t("q2who"), text: t("q2text") },
+    { who: t("q3who"), text: t("q3text") },
+  ];
 
   return (
     <section ref={ref} className="relative mx-auto max-w-6xl px-6 py-20 sm:py-28">
       <div className="text-center">
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-          <Play className="h-3 w-3" /> Se Kronekort-X i bruk
+          <Play className="h-3 w-3" /> {t("demoSeeBadge")}
         </span>
         <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          Når vennene dine oppdager appen
+          {t("demoFriendsTitle")}
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-          Et lite gløtt inn i hvordan folk reagerer første gang de ser saldoen oppdatere seg av seg selv.
+          {t("demoFriendsSub")}
         </p>
       </div>
 
@@ -90,7 +91,7 @@ export function DemoVideoSection() {
               <div className="relative h-44 w-24 rounded-[1.4rem] border-4 border-foreground/80 bg-background shadow-2xl sm:h-56 sm:w-32">
                 <div className="absolute left-1/2 top-1 h-1 w-8 -translate-x-1/2 rounded-full bg-foreground/40" />
                 <div className="absolute inset-2 overflow-hidden rounded-[1rem] bg-gradient-to-br from-primary to-[color:var(--bcard-c)] p-2 text-white">
-                  <p className="text-[7px] uppercase tracking-widest opacity-70">Saldo</p>
+                  <p className="text-[7px] uppercase tracking-widest opacity-70">{t("demoBalanceWord")}</p>
                   <motion.p
                     key={inView ? "live" : "idle"}
                     initial={{ opacity: 0, y: 6 }}
