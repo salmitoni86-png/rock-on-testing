@@ -37,6 +37,15 @@ export async function seedMockTransactions(cardId: string) {
   if (error) throw error;
 }
 
+export async function refreshCardTransactions(
+  cardId: string,
+): Promise<{ added: number; newBalance: number }> {
+  const { data, error } = await supabase.rpc("refresh_card_transactions", { _card_id: cardId });
+  if (error) throw error;
+  const row = (Array.isArray(data) ? data[0] : data) as { added: number; new_balance: number } | undefined;
+  return { added: row?.added ?? 0, newBalance: Number(row?.new_balance ?? 0) };
+}
+
 export function summarize(rows: Transaction[]) {
   let income = 0,
     spend = 0;
