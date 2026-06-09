@@ -106,13 +106,13 @@ function BlogPost() {
         </div>
 
         <section className="mt-12">
-          <h2 className="font-display text-2xl font-semibold">Kommentarer ({comments.length})</h2>
+          <h2 className="font-display text-2xl font-semibold">{t("commentsTitle")} ({comments.length})</h2>
           {user ? (
             <form onSubmit={submitComment} className="mt-4 flex gap-2">
               <input
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                placeholder="Skriv en kommentar…"
+                placeholder={t("commentPh")}
                 maxLength={1000}
                 className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
               />
@@ -122,7 +122,7 @@ function BlogPost() {
             </form>
           ) : (
             <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-              <Link to="/login" className="text-primary underline">Logg inn</Link> for å kommentere.
+              <Link to="/login" className="text-primary underline">{t("loginWord")}</Link> {t("loginToComment")}
             </p>
           )}
           <ul className="mt-6 space-y-3">
@@ -130,7 +130,7 @@ function BlogPost() {
               <li key={c.id} className="rounded-xl border border-border bg-card p-4">
                 <p className="text-sm">{c.body}</p>
                 <p className="mt-2 text-[11px] text-muted-foreground">
-                  @{profiles[c.author_id] ?? "anonym"} · {new Date(c.created_at).toLocaleString("nb-NO")}
+                  @{profiles[c.author_id] ?? t("anonWord")} · {fmt.date(c.created_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </p>
               </li>
             ))}
