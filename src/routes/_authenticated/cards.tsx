@@ -40,6 +40,7 @@ function CardsPage() {
   const [joinLast4, setJoinLast4] = useState("");
   const [addUsername, setAddUsername] = useState<Record<string, string>>({});
   const [pinInput, setPinInput] = useState<Record<string, string>>({});
+  const [refreshing, setRefreshing] = useState<Record<string, boolean>>({});
 
   async function refresh() {
     const { data: cs } = await supabase.from("cards").select("*").order("created_at", { ascending: false });
