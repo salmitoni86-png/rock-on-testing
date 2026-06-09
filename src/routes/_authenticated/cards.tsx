@@ -67,7 +67,6 @@ function CardsPage() {
     const { data: created, error } = await supabase.from("cards").insert({
       name: newName.trim() || "DNB Kronekort",
       card_number: num,
-      last4: num.slice(-4),
       owner_name: newOwner.trim() || null,
       owner_id: user!.id,
     }).select("id").single();
