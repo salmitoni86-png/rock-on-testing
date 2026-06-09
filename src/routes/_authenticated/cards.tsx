@@ -219,9 +219,19 @@ function CardsPage() {
                     <p className="mt-1 font-display text-lg font-semibold">{c.name}</p>
                   </div>
                   {ownerHere && (
-                    <button onClick={() => removeCard(c.id)} className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/70 hover:bg-white/20">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => syncCard(c.id)}
+                        disabled={!!refreshing[c.id]}
+                        title={t("refreshTx")}
+                        className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 disabled:opacity-50"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${refreshing[c.id] ? "animate-spin" : ""}`} />
+                      </button>
+                      <button onClick={() => removeCard(c.id)} className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/70 hover:bg-white/20">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
                 <p className="tabular mt-6 font-mono text-base tracking-[0.3em] text-white/80">•••• •••• •••• {c.last4}</p>
