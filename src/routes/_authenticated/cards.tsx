@@ -111,6 +111,20 @@ function CardsPage() {
     if (error) toast.error(error.message); else refresh();
   }
 
+  async function syncCard(id: string) {
+    setRefreshing((s) => ({ ...s, [id]: true }));
+    try {
+      const { added, newBalance } = await refreshCardTransactions(id);
+      setCards((cs) => cs.map((c) => (c.id === id ? { ...c, last_balance: newBalance } : c)));
+      toast.success(t("tSyncDone", { n: added }));
+      refresh();
+    } catch (err: any) {
+      toast.error(err?.message ?? t("tFailed"));
+    } finally {
+      setRefreshing((s) => ({ ...s, [id]: false }));
+    }
+  }
+
   async function joinCard(e: React.FormEvent) {
     e.preventDefault();
     const { data: prof } = await supabase.from("profiles").select("id").eq("username", joinOwner.trim().toLowerCase()).maybeSingle();
