@@ -692,6 +692,13 @@ export type Database = {
         Args: { _card_id: string; _user_id: string }
         Returns: boolean
       }
+      refresh_card_transactions: {
+        Args: { _card_id: string }
+        Returns: {
+          added: number
+          new_balance: number
+        }[]
+      }
       seed_mock_transactions: { Args: { _card_id: string }; Returns: undefined }
     }
     Enums: {

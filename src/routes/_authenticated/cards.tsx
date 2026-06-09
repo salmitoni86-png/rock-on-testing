@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Users, Check, X, UserPlus, Lock, LockOpen, ArrowRight } from "lucide-react";
+import { Plus, Trash2, Users, Check, X, UserPlus, Lock, LockOpen, ArrowRight, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { useLang } from "@/lib/i18n";
 import { setCardPin, clearCardPin } from "@/lib/card-pin.functions";
-import { seedMockTransactions } from "@/lib/transactions";
+import { seedMockTransactions, refreshCardTransactions } from "@/lib/transactions";
 
 export const Route = createFileRoute("/_authenticated/cards")({
   head: () => ({ meta: [{ title: "Mine kort — Kronekort-X" }] }),
@@ -40,6 +40,7 @@ function CardsPage() {
   const [joinLast4, setJoinLast4] = useState("");
   const [addUsername, setAddUsername] = useState<Record<string, string>>({});
   const [pinInput, setPinInput] = useState<Record<string, string>>({});
+  const [refreshing, setRefreshing] = useState<Record<string, boolean>>({});
 
   async function refresh() {
     const { data: cs } = await supabase.from("cards").select("*").order("created_at", { ascending: false });
@@ -66,7 +67,6 @@ function CardsPage() {
     const { data: created, error } = await supabase.from("cards").insert({
       name: newName.trim() || "DNB Kronekort",
       card_number: num,
-      last4: num.slice(-4),
       owner_name: newOwner.trim() || null,
       owner_id: user!.id,
     }).select("id").single();
@@ -109,6 +109,20 @@ function CardsPage() {
     if (!confirm(t("tConfirmDeleteCard"))) return;
     const { error } = await supabase.from("cards").delete().eq("id", id);
     if (error) toast.error(error.message); else refresh();
+  }
+
+  async function syncCard(id: string) {
+    setRefreshing((s) => ({ ...s, [id]: true }));
+    try {
+      const { added, newBalance } = await refreshCardTransactions(id);
+      setCards((cs) => cs.map((c) => (c.id === id ? { ...c, last_balance: newBalance } : c)));
+      toast.success(t("tSyncDone", { n: added }));
+      refresh();
+    } catch (err: any) {
+      toast.error(err?.message ?? t("tFailed"));
+    } finally {
+      setRefreshing((s) => ({ ...s, [id]: false }));
+    }
   }
 
   async function joinCard(e: React.FormEvent) {
@@ -205,9 +219,19 @@ function CardsPage() {
                     <p className="mt-1 font-display text-lg font-semibold">{c.name}</p>
                   </div>
                   {ownerHere && (
-                    <button onClick={() => removeCard(c.id)} className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/70 hover:bg-white/20">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => syncCard(c.id)}
+                        disabled={!!refreshing[c.id]}
+                        title={t("refreshTx")}
+                        className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 disabled:opacity-50"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${refreshing[c.id] ? "animate-spin" : ""}`} />
+                      </button>
+                      <button onClick={() => removeCard(c.id)} className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/70 hover:bg-white/20">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
                 <p className="tabular mt-6 font-mono text-base tracking-[0.3em] text-white/80">•••• •••• •••• {c.last4}</p>
@@ -227,13 +251,25 @@ function CardsPage() {
                 </div>
               </div>
 
-              <Link
-                to="/cards/$id"
-                params={{ id: c.id }}
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-              >
-                {t("seeTx")} <ArrowRight className="h-3 w-3" />
-              </Link>
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  to="/cards/$id"
+                  params={{ id: c.id }}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                >
+                  {t("seeTx")} <ArrowRight className="h-3 w-3" />
+                </Link>
+                {ownerHere && (
+                  <button
+                    onClick={() => syncCard(c.id)}
+                    disabled={!!refreshing[c.id]}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${refreshing[c.id] ? "animate-spin" : ""}`} />
+                    {refreshing[c.id] ? t("refreshingTx") : t("refreshTx")}
+                  </button>
+                )}
+              </div>
 
               {ownerHere && (
                 <div className="rounded-2xl border border-border bg-card p-4">
