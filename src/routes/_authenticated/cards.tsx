@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Users, Check, X, UserPlus, Lock, LockOpen, ArrowRight } from "lucide-react";
+import { Plus, Trash2, Users, Check, X, UserPlus, Lock, LockOpen, ArrowRight, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { useLang } from "@/lib/i18n";
 import { setCardPin, clearCardPin } from "@/lib/card-pin.functions";
-import { seedMockTransactions } from "@/lib/transactions";
+import { seedMockTransactions, refreshCardTransactions } from "@/lib/transactions";
 
 export const Route = createFileRoute("/_authenticated/cards")({
   head: () => ({ meta: [{ title: "Mine kort — Kronekort-X" }] }),
