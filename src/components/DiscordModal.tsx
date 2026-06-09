@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Copy, Check, ExternalLink, Users, Hash, Bell } from "lucide-react";
 import { useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 export const DISCORD_INVITE = "https://discord.gg/kronekort-x";
 export const DISCORD_SERVER_ID = "kronekort-x";
 
 export function DiscordModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useLang();
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -53,48 +55,48 @@ export function DiscordModal({ open, onClose }: { open: boolean; onClose: () => 
               <button
                 onClick={onClose}
                 className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/30 text-white hover:bg-black/50"
-                aria-label="Lukk"
+                aria-label={t("closeWord")}
               >
                 <X className="h-4 w-4" />
               </button>
               <div className="absolute bottom-3 left-5 text-white">
                 <p className="text-xs uppercase tracking-[0.2em] opacity-80">Discord</p>
-                <p className="font-display text-2xl font-semibold">Kronekort-X Server</p>
+                <p className="font-display text-2xl font-semibold">{t("discordServer")}</p>
               </div>
             </div>
 
             <div className="space-y-4 p-6">
               <div className="grid grid-cols-3 gap-3 text-center">
-                <Stat icon={<Users className="h-3.5 w-3.5" />} label="Medlemmer" value="2 481" />
-                <Stat icon={<Hash className="h-3.5 w-3.5" />} label="Kanaler" value="14" />
-                <Stat icon={<Bell className="h-3.5 w-3.5" />} label="Pålogget" value="312" />
+                <Stat icon={<Users className="h-3.5 w-3.5" />} label={t("dcMembers")} value="2 481" />
+                <Stat icon={<Hash className="h-3.5 w-3.5" />} label={t("dcChannels")} value="14" />
+                <Stat icon={<Bell className="h-3.5 w-3.5" />} label={t("dcOnline")} value="312" />
               </div>
 
               <div>
-                <p className="text-sm font-semibold">Hva får du?</p>
+                <p className="text-sm font-semibold">{t("dcWhatTitle")}</p>
                 <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#5865F2]" />
-                    Live-varsler når NAV / lønn lander på kortet ditt
+                    {t("dcPerk1")}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#5865F2]" />
-                    SoS / VIP-rom for låneforespørsler og rask hjelp
+                    {t("dcPerk2")}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#5865F2]" />
-                    Tidlig tilgang til nye funksjoner og beta-tester
+                    {t("dcPerk3")}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#5865F2]" />
-                    Direkte chat med teamet og andre brukere
+                    {t("dcPerk4")}
                   </li>
                 </ul>
               </div>
 
               <div className="rounded-2xl border border-border bg-background p-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Invitasjonslenke
+                  {t("dcInviteLink")}
                 </p>
                 <div className="mt-1 flex items-center gap-2">
                   <code className="flex-1 truncate text-xs">{DISCORD_INVITE}</code>
@@ -117,7 +119,7 @@ export function DiscordModal({ open, onClose }: { open: boolean; onClose: () => 
                 rel="noopener noreferrer"
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#5865F2] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#5865F2]/30 transition-transform hover:scale-[1.02]"
               >
-                Bli med på serveren <ExternalLink className="h-4 w-4" />
+                {t("dcJoin")} <ExternalLink className="h-4 w-4" />
               </a>
             </div>
           </motion.div>

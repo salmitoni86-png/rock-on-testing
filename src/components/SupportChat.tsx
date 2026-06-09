@@ -7,21 +7,10 @@ import { useLang, LANGS } from "@/lib/i18n";
 
 type Msg = { role: "user" | "assistant"; body: string };
 
-const INTRO_BY_LANG: Record<string, string> = {
-  no: "Hei! 👋 Jeg er Kronekort-X sin AI-assistent. Hva kan jeg hjelpe deg med i dag? (Skriv 'menneske' om du vil snakke med support.)",
-  en: "Hi! 👋 I'm the Kronekort-X AI assistant. How can I help you today? (Type 'human' to talk to a real person.)",
-  sv: "Hej! 👋 Jag är Kronekort-X AI-assistent. Hur kan jag hjälpa dig? (Skriv 'människa' för att prata med support.)",
-  da: "Hej! 👋 Jeg er Kronekort-X AI-assistent. Hvad kan jeg hjælpe med? (Skriv 'menneske' for at tale med support.)",
-  fi: "Hei! 👋 Olen Kronekort-X AI-avustaja. Miten voin auttaa? (Kirjoita 'ihminen' puhuaksesi tukihenkilön kanssa.)",
-  pl: "Cześć! 👋 Jestem asystentem AI Kronekort-X. W czym mogę pomóc? (Napisz 'człowiek', aby porozmawiać z supportem.)",
-  uk: "Привіт! 👋 Я AI-асистент Kronekort-X. Чим можу допомогти? (Напишіть 'людина' щоб поговорити з підтримкою.)",
-  ru: "Привет! 👋 Я AI-ассистент Kronekort-X. Чем могу помочь? (Напишите 'человек' чтобы связаться с поддержкой.)",
-};
-
 export function SupportChat() {
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const langLabel = LANGS.find((l) => l.code === lang)?.label ?? "Norsk";
-  const intro: Msg = { role: "assistant", body: INTRO_BY_LANG[lang] ?? INTRO_BY_LANG.no };
+  const intro: Msg = { role: "assistant", body: t("chatIntro") };
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([intro]);
   const [input, setInput] = useState("");
@@ -33,7 +22,8 @@ export function SupportChat() {
 
   // Reset intro when language changes (only if no real conversation yet)
   useEffect(() => {
-    if (!convId) setMessages([{ role: "assistant", body: INTRO_BY_LANG[lang] ?? INTRO_BY_LANG.no }]);
+    if (!convId) setMessages([{ role: "assistant", body: t("chatIntro") }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang, convId]);
 
   useEffect(() => {
@@ -59,7 +49,7 @@ export function SupportChat() {
       if (res.needsHuman) setEscalated(true);
     } catch (err) {
       console.error(err);
-      setMessages((m) => [...m, { role: "assistant", body: "Beklager — noe gikk galt. Prøv igjen om litt." }]);
+      setMessages((m) => [...m, { role: "assistant", body: t("chatError") }]);
     } finally {
       setSending(false);
     }
@@ -69,7 +59,7 @@ export function SupportChat() {
     <>
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label="Åpne support-chat"
+        aria-label={t("chatOpenAria")}
         className="fixed bottom-6 right-6 z-50 grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-2xl shadow-primary/30 transition-transform hover:scale-105"
       >
         {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
@@ -97,9 +87,9 @@ export function SupportChat() {
                 <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-[color:var(--income)]" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold">Kronekort-X Support</p>
+                <p className="text-sm font-semibold">{t("chatSupportTitle")}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {escalated ? "Venter på menneske…" : "AI-assistent · på nett"}
+                  {escalated ? t("chatWaitingHuman") : t("chatOnline")}
                 </p>
               </div>
             </header>
@@ -121,12 +111,12 @@ export function SupportChat() {
               {escalated && (
                 <div className="flex items-center gap-2 rounded-xl border border-[color:var(--income)]/30 bg-[color:var(--income)]/10 px-3 py-2 text-xs">
                   <UserCheck className="h-4 w-4 text-[color:var(--income)]" />
-                  Henvendelsen din er flagget for et menneske. De svarer så fort de kan.
+                  {t("chatFlagged")}
                 </div>
               )}
               {sending && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Skriver…
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("chatTyping")}
                 </div>
               )}
             </div>
@@ -135,7 +125,7 @@ export function SupportChat() {
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Skriv en melding…"
+                placeholder={t("chatPlaceholder")}
                 className="flex-1 rounded-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                 disabled={sending}
               />

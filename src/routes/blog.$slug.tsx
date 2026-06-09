@@ -5,6 +5,7 @@ import { LivingBackground } from "@/components/LivingBackground";
 import { ShareBar } from "@/components/ShareBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { useLang } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -23,6 +24,7 @@ type Comment = { id: string; body: string; created_at: string; author_id: string
 function BlogPost() {
   const { slug } = useParams({ from: "/blog/$slug" });
   const { user } = useAuth();
+  const { t, fmt } = useLang();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
@@ -64,20 +66,20 @@ function BlogPost() {
     if (!user || !post || !body.trim()) return;
     const { error } = await supabase.from("blog_comments").insert({ post_id: post.id, author_id: user.id, body: body.trim() });
     if (error) {
-      toast.error("Kunne ikke poste");
+      toast.error(t("commentFailed"));
     } else {
       setBody("");
-      toast.success("Kommentar lagt til");
+      toast.success(t("commentAdded"));
       loadComments(post.id);
     }
   }
 
-  if (loading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Laster…</div>;
+  if (loading) return <div className="grid min-h-screen place-items-center text-muted-foreground">{t("loadingWord")}</div>;
   if (!post) return (
     <div className="grid min-h-screen place-items-center px-4 text-center">
       <div>
-        <h1 className="font-display text-3xl font-semibold">Innlegget finnes ikke</h1>
-        <Link to="/blog" className="mt-4 inline-block text-primary underline">Tilbake til bloggen</Link>
+        <h1 className="font-display text-3xl font-semibold">{t("postNotFound")}</h1>
+        <Link to="/blog" className="mt-4 inline-block text-primary underline">{t("backToBlog")}</Link>
       </div>
     </div>
   );
@@ -88,13 +90,13 @@ function BlogPost() {
       <LivingBackground density={8} />
       <article className="mx-auto max-w-3xl px-6 py-12">
         <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Tilbake til bloggen
+          <ArrowLeft className="h-4 w-4" /> {t("backToBlog")}
         </Link>
         {post.cover_url && <img src={post.cover_url} alt="" className="mt-6 aspect-video w-full rounded-2xl object-cover" />}
         <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{post.title}</h1>
         {post.published_at && (
           <p className="mt-2 text-sm text-muted-foreground">
-            {new Date(post.published_at).toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" })}
+            {fmt.date(post.published_at, { day: "numeric", month: "long", year: "numeric" })}
           </p>
         )}
         <div className="prose prose-invert mt-8 max-w-none whitespace-pre-wrap text-foreground/90">{post.body_md}</div>
@@ -104,13 +106,13 @@ function BlogPost() {
         </div>
 
         <section className="mt-12">
-          <h2 className="font-display text-2xl font-semibold">Kommentarer ({comments.length})</h2>
+          <h2 className="font-display text-2xl font-semibold">{t("commentsTitle")} ({comments.length})</h2>
           {user ? (
             <form onSubmit={submitComment} className="mt-4 flex gap-2">
               <input
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                placeholder="Skriv en kommentar…"
+                placeholder={t("commentPh")}
                 maxLength={1000}
                 className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
               />
@@ -120,7 +122,7 @@ function BlogPost() {
             </form>
           ) : (
             <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-              <Link to="/login" className="text-primary underline">Logg inn</Link> for å kommentere.
+              <Link to="/login" className="text-primary underline">{t("loginWord")}</Link> {t("loginToComment")}
             </p>
           )}
           <ul className="mt-6 space-y-3">
@@ -128,7 +130,7 @@ function BlogPost() {
               <li key={c.id} className="rounded-xl border border-border bg-card p-4">
                 <p className="text-sm">{c.body}</p>
                 <p className="mt-2 text-[11px] text-muted-foreground">
-                  @{profiles[c.author_id] ?? "anonym"} · {new Date(c.created_at).toLocaleString("nb-NO")}
+                  @{profiles[c.author_id] ?? t("anonWord")} · {fmt.date(c.created_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </p>
               </li>
             ))}

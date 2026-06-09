@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/use-auth";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Logg inn — Kronekort-X" }] }),
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const { user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ function LoginPage() {
 
   async function google() {
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/app" });
-    if (r.error) toast.error(r.error.message ?? "Google-pålogging feilet");
+    if (r.error) toast.error(r.error.message ?? t("googleFailed"));
   }
 
   return (
@@ -42,47 +44,47 @@ function LoginPage() {
       <Toaster position="top-center" />
       <header className="mx-auto flex max-w-md items-center justify-between px-6 pt-6">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Tilbake
+          <ArrowLeft className="h-4 w-4" /> {t("backWord")}
         </Link>
       </header>
       <main className="mx-auto max-w-md px-6 pt-12 pb-20">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Velkommen tilbake</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Logg inn for å se kortene dine.</p>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">{t("loginWelcome")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("loginSub")}</p>
 
         <button
           onClick={google}
           className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium hover:bg-accent"
         >
-          <GoogleIcon /> Fortsett med Google
+          <GoogleIcon /> {t("continueGoogle")}
         </button>
 
         <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="h-px flex-1 bg-border" /> eller med e-post <div className="h-px flex-1 bg-border" />
+          <div className="h-px flex-1 bg-border" /> {t("orEmail")} <div className="h-px flex-1 bg-border" />
         </div>
 
         <form onSubmit={onSubmit} className="space-y-3">
           <input
             type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="navn@eksempel.no"
+            placeholder={t("emailExamplePh")}
             className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
           <input
             type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder="Passord" minLength={6}
+            placeholder={t("passwordPh")} minLength={6}
             className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
           <button
             type="submit" disabled={busy}
             className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {busy ? "Logger inn…" : "Logg inn"}
+            {busy ? t("loggingIn") : t("loginBtn")}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Har du ikke konto?{" "}
+          {t("noAccount")}{" "}
           <Link to="/signup" className="font-medium text-foreground underline">
-            Opprett en
+            {t("createOne")}
           </Link>
         </p>
       </main>
