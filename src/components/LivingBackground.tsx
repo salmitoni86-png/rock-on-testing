@@ -4,7 +4,7 @@ import { useActivityLevel } from "@/hooks/use-activity-level";
 
 // Floating "X" glyphs + "kronekort-x" wordmarks drifting in the background.
 // Pure CSS transforms — GPU-friendly. Respects prefers-reduced-motion.
-export function LivingBackground({ density = 14 }: { density?: number }) {
+export function LivingBackground({ density = 34 }: { density?: number }) {
   const reduced = useReducedMotion();
   const activity = useActivityLevel();
   // Active → ~0.8, idle → ~0.1. Smoothly interpolated by the activity hook.
@@ -12,17 +12,28 @@ export function LivingBackground({ density = 14 }: { density?: number }) {
 
   const items = useMemo(() => {
     const rng = mulberry32(42);
-    return Array.from({ length: density }, (_, i) => ({
-      id: i,
-      kind: i % 4 === 0 ? "word" : "x",
-      x: rng() * 100,
-      y: rng() * 100,
-      size: 60 + rng() * 280,
-      rot: rng() * 60 - 30,
-      delay: rng() * 8,
-      dur: 14 + rng() * 18,
-      opacity: 0.04 + rng() * 0.08,
-    }));
+    // Lay the glyphs out on a loose grid so the whole background is
+    // evenly covered, then jitter each cell for an organic, floating feel.
+    const cols = Math.ceil(Math.sqrt(density * 1.4));
+    const rows = Math.ceil(density / cols);
+    return Array.from({ length: density }, (_, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cellW = 100 / cols;
+      const cellH = 100 / rows;
+      return {
+        id: i,
+        // Mostly wordmarks so "kronekort-x" fills the canvas, with a few X's mixed in.
+        kind: i % 3 === 0 ? "x" : "word",
+        x: col * cellW + rng() * cellW,
+        y: row * cellH + rng() * cellH,
+        size: 60 + rng() * 220,
+        rot: rng() * 60 - 30,
+        delay: rng() * 8,
+        dur: 14 + rng() * 18,
+        opacity: 0.05 + rng() * 0.09,
+      };
+    });
   }, [density]);
 
   return (
