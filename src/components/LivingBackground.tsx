@@ -29,6 +29,20 @@ export function LivingBackground({ density = 14 }: { density?: number }) {
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {/* Soft gradient wash */}
       <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_-10%,color-mix(in_oklab,var(--primary)_22%,transparent),transparent),radial-gradient(60%_50%_at_100%_100%,color-mix(in_oklab,var(--bcard-c)_18%,transparent),transparent)]" />
+
+      {/* Activity-reactive centered wordmark — fades up while the user is
+          active, smoothly eases back toward 0.1 during inactivity. */}
+      <motion.div
+        className="absolute inset-0 grid place-items-center"
+        style={{ opacity: wordmarkOpacity }}
+        animate={reduced ? undefined : { scale: [1, 1.015, 1] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <span className="select-none whitespace-nowrap font-display text-[18vw] font-black leading-none tracking-tighter bg-gradient-to-br from-primary via-[color:var(--bcard-c)] to-[color:var(--salary)] bg-clip-text text-transparent sm:text-[16vw]">
+          Kronekort<span className="text-foreground/80">-X</span>
+        </span>
+      </motion.div>
+
       {items.map((it) =>
         it.kind === "x" ? (
           <motion.span
