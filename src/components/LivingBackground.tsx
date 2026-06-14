@@ -4,7 +4,7 @@ import { useActivityLevel } from "@/hooks/use-activity-level";
 
 // Floating "X" glyphs + "kronekort-x" wordmarks drifting in the background.
 // Pure CSS transforms — GPU-friendly. Respects prefers-reduced-motion.
-export function LivingBackground({ density = 14 }: { density?: number }) {
+export function LivingBackground({ density = 34 }: { density?: number }) {
   const reduced = useReducedMotion();
   const activity = useActivityLevel();
   // Active → ~0.8, idle → ~0.1. Smoothly interpolated by the activity hook.
